@@ -300,6 +300,10 @@ function finalizeMerge() {
   ignoredColumns  = new Set();
   sheetImportDone.forEach(s => s.ignoredColumns.forEach(c => ignoredColumns.add(c)));
 
+  // DOM neu aufbauen damit collectGlobalVars() die Eingabefelder findet
+  renderRowTable();
+  renderGlobalVars();
+
   initSources();
   showStep(document.getElementById('step-sources'), 3);
 }
