@@ -40,6 +40,56 @@ function initMapping() {
   renderPersonList();
   renderPreview();
   populatePreviewRowSelect();
+  renderProfileBar();
+}
+
+// ---- Profile bar ----
+function renderProfileBar() {
+  const existing = document.getElementById('profile-bar');
+  if (existing) existing.remove();
+
+  const bar = document.createElement('div');
+  bar.id = 'profile-bar';
+  bar.className = 'profile-bar';
+  bar.innerHTML =
+    '<span class="profile-bar-label">&#128190; Mapping-Profil:</span>' +
+    '<button id="btn-profile-save" class="btn-secondary btn-small">Speichern (&#8595; JSON)</button>' +
+    '<label class="btn-secondary btn-small profile-load-label" title="Profil-JSON laden">Laden (&#8593; JSON)<input type="file" id="profile-load-input" accept=".json" style="display:none" /></label>' +
+    '<span id="profile-status" class="profile-status"></span>';
+
+  // Insert before mapping-layout
+  const layout = document.querySelector('.mapping-layout');
+  layout.parentNode.insertBefore(bar, layout);
+
+  document.getElementById('btn-profile-save').addEventListener('click', () => {
+    saveProfile();
+    showProfileStatus('Profil gespeichert &#10003;', 'ok');
+  });
+
+  document.getElementById('profile-load-input').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const profile = await loadProfileFromFile(file);
+      applyProfile(profile);
+      renderColumnPalette();
+      renderPersonList();
+      renderPreview();
+      populatePreviewRowSelect();
+      showProfileStatus('Profil geladen: ' + file.name + ' &#10003;', 'ok');
+    } catch (err) {
+      showProfileStatus('Fehler: ' + err.message, 'error');
+    }
+    e.target.value = '';
+  });
+}
+
+function showProfileStatus(msg, type) {
+  const el = document.getElementById('profile-status');
+  if (!el) return;
+  el.innerHTML = msg;
+  el.className = 'profile-status profile-status-' + type;
+  setTimeout(() => { el.innerHTML = ''; el.className = 'profile-status'; }, 4000);
 }
 
 // ---- Column palette ----

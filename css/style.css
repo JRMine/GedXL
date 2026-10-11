@@ -935,3 +935,16 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   font-size: 11px; line-height: 1.6; padding: 12px; border-radius: 6px;
   white-space: pre; margin: 0;
 }
+
+/* ---- Profile bar ---- */
+.profile-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: #f0f4ff; border: 1px solid #c7d2fe;
+  border-radius: 8px; padding: 8px 14px; margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.profile-bar-label { font-size: 12px; font-weight: 700; color: #3730a3; }
+.profile-load-label { cursor: pointer; }
+.profile-status { font-size: 12px; margin-left: 4px; }
+.profile-status-ok    { color: #166534; }
+.profile-status-error { color: #991b1b; }
