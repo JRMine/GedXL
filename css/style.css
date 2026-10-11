@@ -1119,3 +1119,8 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   .start-feature-grid { grid-template-columns: 1fr; }
   .start-step { width: 90%; max-width: 300px; }
 }
+
+/* ---- Multi-File Upload ----*/
+.drop-hint-multi { font-size: 11px; color: #aaa; margin: 6px 0 0; }
+.upload-selected-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.upload-file-item { background: #f0f4ff; border: 1px solid #c5d0f0; border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #1a1f36; }

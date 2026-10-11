@@ -150,15 +150,16 @@
       </div>
       <div id="drop-zone" class="drop-zone">
         <div class="drop-icon">&#128196;</div>
-        <p>Excel- oder CSV-Datei hier ablegen</p>
+        <p>Excel- oder CSV-Dateien hier ablegen</p>
         <p class="drop-sub">oder</p>
-        <label class="btn-primary" for="file-input">Datei auswaehlen</label>
-        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden />
+        <label class="btn-primary" for="file-input">Dateien auswaehlen</label>
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" multiple hidden />
+        <p class="drop-hint-multi">Mehrere Dateien m&ouml;glich (gleicher Tabellenaufbau)</p>
       </div>
       <div id="upload-selected" class="upload-selected hidden">
-        <span id="upload-selected-name" class="upload-selected-name"></span>
+        <div id="upload-selected-list" class="upload-selected-list"></div>
         <button id="btn-upload-next" class="btn-primary">Weiter &#8594;</button>
-        <button id="btn-upload-clear" class="btn-secondary btn-small">&#10005; andere Datei</button>
+        <button id="btn-upload-clear" class="btn-secondary btn-small">&#10005; neu auswaehlen</button>
       </div>
       <p class="hint">Ihre Datei wird nur lokal im Browser verarbeitet &ndash; es werden keine Daten hochgeladen.</p>
     </section>

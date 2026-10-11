@@ -3,7 +3,8 @@
  */
 
 // ---- State ----
-let parsedFile = null;
+let parsedFiles = [];  // Array bei Multi-File-Upload
+let parsedFile = null;  // Kompatibilitaet (erstes File)
 let uploadedFileName = '';
 let currentRows = [];
 let classifications = [];
@@ -113,16 +114,17 @@ dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropZone.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (file) handleFile(file);
+  const files = Array.from(e.dataTransfer.files).filter(f => /\.(xlsx|xls|csv)$/i.test(f.name));
+  if (files.length > 0) handleFiles(files);
 });
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', () => {
-  if (fileInput.files[0]) handleFile(fileInput.files[0]);
+  if (fileInput.files.length > 0) handleFiles(Array.from(fileInput.files));
 });
 
 document.getElementById('btn-upload-next').addEventListener('click', () => proceedFromUpload());
 document.getElementById('btn-upload-clear').addEventListener('click', () => {
+  parsedFiles = [];
   parsedFile = null;
   uploadedFileName = '';
   fileInput.value = '';
@@ -149,26 +151,48 @@ document.getElementById('profile-load-input-upload').addEventListener('change', 
 });
 
 // ---- File handling ----
-async function handleFile(file) {
-  uploadedFileName = file.name.replace(/\.[^.]+$/, '');
-  try {
-    parsedFile = await parseFile(file);
-    // Dateiname anzeigen, Weiter-Button einblenden
-    document.getElementById('upload-selected-name').textContent = '&#128196; ' + file.name;
-    document.getElementById('upload-selected-name').innerHTML = '&#128196; ' + file.name;
+async function handleFiles(files) {
+  if (!files || files.length === 0) return;
+  parsedFiles = [];
+  const listEl = document.getElementById('upload-selected-list');
+  listEl.innerHTML = '';
+  for (const file of files) {
+    try {
+      const parsed = await parseFile(file);
+      parsedFiles.push({ file, parsed, name: file.name });
+      const item = document.createElement('div');
+      item.className = 'upload-file-item';
+      item.innerHTML = '&#128196; ' + file.name;
+      listEl.appendChild(item);
+    } catch (e) {
+      alert('Fehler beim Lesen von ' + file.name + ': ' + e.message);
+    }
+  }
+  if (parsedFiles.length > 0) {
+    parsedFile = parsedFiles[0].parsed;
+    uploadedFileName = parsedFiles[0].file.name.replace(/\.[^.]+$/, '');
     document.getElementById('upload-selected').classList.remove('hidden');
     dropZone.classList.add('hidden');
-  } catch (e) {
-    alert('Fehler beim Lesen der Datei: ' + e.message);
   }
+}
+
+async function handleFile(file) {
+  return handleFiles([file]);
 }
 
 sourceSheets = {}; // reset
 
 function proceedFromUpload() {
-  if (!parsedFile) return;
+  if (parsedFiles.length === 0 && !parsedFile) return;
+  // Multi-File: alle Files als einzelne Sheets in _pendingFiles speichern
+  if (parsedFiles.length > 1) {
+    // Mehrere Dateien: jede als eigenes 'sheet' behandeln
+    window._pendingMultiFiles = parsedFiles.slice(1); // Rest nach dem ersten
+  } else {
+    window._pendingMultiFiles = [];
+  }
+  // Erstes File wie bisher behandeln
   if (parsedFile.sheetNames.length === 1) {
-    // Direkt zu Projekteinstellungen, roleMap merken
     window._pendingRoleMap = { [parsedFile.sheetNames[0]]: 'data' };
     showStep(stepProject, 2);
     if (typeof initProjectSettings === 'function') initProjectSettings();
@@ -247,6 +271,23 @@ function loadSheets(roleMap) {
     alert('Kein Personendaten-Blatt ausgewaehlt.');
     return;
   }
+
+  // Multi-File: weitere Dateien ebenfalls in Queue laden
+  const extraFiles = window._pendingMultiFiles || [];
+  extraFiles.forEach(({ file, parsed, name: fileName }) => {
+    parsed.sheetNames.forEach(sheetName => {
+      let rows = parsed.getSheet(sheetName);
+      while (rows.length > 0) {
+        const last = rows[rows.length - 1];
+        if (last.every(c => c === null || c === undefined || String(c).trim() === '')) rows.pop();
+        else break;
+      }
+      const label = fileName.replace(/\.[^.]+$/, '') + ' / ' + sheetName;
+      sheetImportQueue.push({ name: label, role: 'data', rows });
+    });
+  });
+  window._pendingMultiFiles = [];
+
   loadNextSheetForCheck();
 }
 
