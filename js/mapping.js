@@ -81,10 +81,10 @@ function addEvent(person, tag) {
     tag,
     label: def ? def.label.split(' (')[0] : tag,
     customType: '',
-    fields: []
+    fields: [],
+    citations: [] // [{sourceId, overrides:{tag->sources[]}}] — manual citation overrides
   };
-  // Pre-populate with DATE, PLAC, NOTE, SOUR.PAGE
-  ['DATE','PLAC','NOTE','SOUR.PAGE'].forEach(p => {
+  ['DATE','PLAC','NOTE'].forEach(p => {
     const fdef = GEDCOM_EVENT_FIELDS.find(f => f.path === p);
     ev.fields.push({ id: newId(), path: p, label: fdef ? fdef.label : p, sources: [] });
   });

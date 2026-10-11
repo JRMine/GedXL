@@ -103,6 +103,44 @@ function renderColumnPalette() {
   staticChip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'static', value: '', label: 'Fester Wert' }; staticChip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
   staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
   mappingLeft.appendChild(staticChip);
+
+  // ---- Sources section ----
+  if (sourceDefs.length > 0) {
+    const srcTitle = document.createElement('div');
+    srcTitle.className = 'palette-section-title';
+    srcTitle.textContent = '📚 Quellen';
+    mappingLeft.appendChild(srcTitle);
+
+    const srcHint = document.createElement('p');
+    srcHint.className = 'palette-hint';
+    srcHint.textContent = 'Auf Person oder Ereignis ziehen, um Zitation manuell hinzuzufügen.';
+    mappingLeft.appendChild(srcHint);
+
+    sourceDefs.forEach(src => {
+      const chip = document.createElement('div');
+      chip.className = 'col-chip src-chip';
+      chip.draggable = true;
+
+      // Build preview of citation fields
+      const dataRow = getFirstDataRow();
+      const citPreview = src.citationFields
+        .map(f => previewSourceField(f, dataRow))
+        .filter(Boolean).slice(0, 1).join('') || '';
+
+      const modeLabel = src.mode === 'existing'
+        ? `ID: ${src.existingId || '?'}`
+        : src.sourceFields.find(f => f.tag === 'TITL') ? previewSourceField(src.sourceFields.find(f => f.tag === 'TITL'), dataRow) || src.name : src.name;
+
+      chip.innerHTML = `<span class="chip-name">📚 ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
+      chip.addEventListener('dragstart', (e) => {
+        dragSourceData = { type: 'source', sourceId: src.id, label: src.name };
+        chip.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+      mappingLeft.appendChild(chip);
+    });
+  }
 }
 
 function getColExample(colIdx) {
@@ -337,84 +375,6 @@ function renderPersonList() {
 
   mappingRight.appendChild(btnAddPerson);
 }
-function renderColumnPalette() {
-  mappingLeft.innerHTML = '';
-
-  const title = document.createElement('h3');
-  title.className = 'palette-title';
-  title.textContent = 'Verfügbare Spalten';
-  mappingLeft.appendChild(title);
-
-  const hint = document.createElement('p');
-  hint.className = 'palette-hint';
-  hint.textContent = 'Spalten per Drag & Drop auf ein Feld ziehen oder per Klick hinzufügen.';
-  mappingLeft.appendChild(hint);
-
-  // Global vars section
-  const gvars = collectGlobalVars();
-  if (Object.keys(gvars).length > 0) {
-    const gTitle = document.createElement('div');
-    gTitle.className = 'palette-section-title';
-    gTitle.textContent = '🔖 Globale Variablen';
-    mappingLeft.appendChild(gTitle);
-
-    Object.entries(gvars).forEach(([varName, value]) => {
-      const chip = document.createElement('div');
-      chip.className = 'col-chip var-chip';
-      chip.draggable = true;
-      chip.dataset.type = 'var';
-      chip.dataset.varName = varName;
-      chip.innerHTML = `<span class="chip-name">${escHtml(varName)}</span><span class="chip-val">${escHtml(value)}</span>`;
-      chip.addEventListener('dragstart', (e) => {
-        dragSourceData = { type: 'var', varName, label: varName };
-        chip.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'copy';
-      });
-      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-      mappingLeft.appendChild(chip);
-    });
-  }
-
-  // Columns
-  const colTitle = document.createElement('div');
-  colTitle.className = 'palette-section-title';
-  colTitle.textContent = '📋 Tabellenspalten';
-  mappingLeft.appendChild(colTitle);
-
-  headers.forEach((colName, colIdx) => {
-    if (ignoredColumns.has(colIdx)) return;
-    const example = getColExample(colIdx);
-    const chip = document.createElement('div');
-    chip.className = 'col-chip';
-    chip.draggable = true;
-    chip.dataset.colIdx = colIdx;
-    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
-    chip.addEventListener('dragstart', (e) => {
-      dragSourceData = { type: 'col', colIdx, label: colName };
-      chip.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'copy';
-    });
-    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-    mappingLeft.appendChild(chip);
-  });
-
-  // Static value chip
-  const staticChip = document.createElement('div');
-  staticChip.className = 'col-chip static-chip';
-  staticChip.draggable = true;
-  staticChip.innerHTML = `<span class="chip-name">✏️ Fester Wert</span><span class="chip-val">für alle Zeilen gleich</span>`;
-  staticChip.addEventListener('dragstart', (e) => {
-    dragSourceData = { type: 'static', value: '', label: 'Fester Wert' };
-    staticChip.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'copy';
-  });
-  staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
-  const staticTitle = document.createElement('div');
-  staticTitle.className = 'palette-section-title';
-  staticTitle.textContent = '✏️ Manuelle Eingabe';
-  mappingLeft.appendChild(staticTitle);
-  mappingLeft.appendChild(staticChip);
-}
 
 function getColExample(colIdx) {
   const row = getFirstDataRow();
@@ -632,6 +592,20 @@ function renderEvent(ev, person) {
   const block = document.createElement('div');
   block.className = 'event-block';
 
+  // Drop zone for source chips on the whole event
+  block.addEventListener('dragover', e => { e.preventDefault(); block.classList.add('drag-over-event'); });
+  block.addEventListener('dragleave', () => block.classList.remove('drag-over-event'));
+  block.addEventListener('drop', e => {
+    e.preventDefault();
+    block.classList.remove('drag-over-event');
+    if (!dragSourceData || dragSourceData.type !== 'source') return;
+    const already = ev.citations.find(c => c.sourceId === dragSourceData.sourceId);
+    if (!already) {
+      ev.citations.push({ id: newId(), sourceId: dragSourceData.sourceId, overrides: {} });
+      renderPersonList(); renderPreview();
+    }
+  });
+
   const header = document.createElement('div');
   header.className = 'event-header';
   header.innerHTML = `
@@ -645,7 +619,6 @@ function renderEvent(ev, person) {
   });
   block.appendChild(header);
 
-  // EVEN: custom type input
   if (ev.tag === 'EVEN') {
     const typeRow = document.createElement('div');
     typeRow.className = 'event-type-row';
@@ -654,19 +627,90 @@ function renderEvent(ev, person) {
     block.appendChild(typeRow);
   }
 
-  // Fields
-  ev.fields.forEach(field => {
-    block.appendChild(renderField(field, person, ev));
-  });
+  ev.fields.forEach(field => block.appendChild(renderField(field, person, ev)));
 
-  // Add field to event
   const addBtn = createAddButton('+ Feld', GEDCOM_EVENT_FIELDS.map(f => ({path: f.path, label: f.label})), (path) => {
-    addEventField(ev, path);
-    renderPersonList(); renderPreview();
+    addEventField(ev, path); renderPersonList(); renderPreview();
   }, true);
   block.appendChild(addBtn);
 
+  // ---- Citations block ----
+  const citBlock = document.createElement('div');
+  citBlock.className = 'event-citations-block';
+
+  // Auto-citations from sourceDefs (attachTo.events)
+  const autoCits = sourceDefs.filter(s => s.attachTo.events);
+  // Manual citations added via drag
+  const manualCits = ev.citations.filter(c => !autoCits.find(s => s.id === c.sourceId));
+
+  if (autoCits.length > 0 || manualCits.length > 0) {
+    const citTitle = document.createElement('div');
+    citTitle.className = 'event-citations-title';
+    citTitle.textContent = '📚 Zitationen';
+    citBlock.appendChild(citTitle);
+  }
+
+  autoCits.forEach(src => {
+    const manual = ev.citations.find(c => c.sourceId === src.id);
+    citBlock.appendChild(renderCitationRow(src, ev, manual, true));
+  });
+
+  manualCits.forEach(cit => {
+    const src = sourceDefs.find(s => s.id === cit.sourceId);
+    if (src) citBlock.appendChild(renderCitationRow(src, ev, cit, false));
+  });
+
+  if (autoCits.length === 0 && manualCits.length === 0) {
+    const dropHint = document.createElement('div');
+    dropHint.className = 'event-drop-source-hint';
+    dropHint.textContent = '📚 Quelle aus linker Palette hierher ziehen';
+    citBlock.appendChild(dropHint);
+  }
+
+  block.appendChild(citBlock);
   return block;
+}
+
+// ---- Render one citation row ----
+function renderCitationRow(src, ev, manualCit, isAuto) {
+  const row = document.createElement('div');
+  row.className = 'citation-row' + (isAuto ? ' citation-auto' : ' citation-manual');
+
+  const badge = isAuto
+    ? `<span class="cit-badge cit-auto" title="Wird automatisch angehängt (Quelleneinstellungen)">auto</span>`
+    : `<span class="cit-badge cit-manual" title="Manuell hinzugefügt">manuell</span>`;
+
+  row.innerHTML = `
+    <div class="cit-header">
+      ${badge}
+      <span class="cit-name">📚 ${escHtml(src.name)}</span>
+      ${!isAuto ? `<button class="btn-icon cit-remove" title="Zitation entfernen">✕</button>` : ''}
+    </div>
+  `;
+
+  if (!isAuto) {
+    row.querySelector('.cit-remove').addEventListener('click', () => {
+      ev.citations = ev.citations.filter(c => c.id !== manualCit?.id);
+      renderPersonList(); renderPreview();
+    });
+  }
+
+  // Show citation fields preview
+  const dataRow = getFirstDataRow();
+  const gvars = collectGlobalVars();
+  const fieldsList = document.createElement('div');
+  fieldsList.className = 'cit-fields';
+  src.citationFields.forEach(f => {
+    const v = previewSourceField(f, dataRow);
+    if (!v && !manualCit?.overrides?.[f.tag]) return;
+    const fRow = document.createElement('div');
+    fRow.className = 'cit-field-row';
+    fRow.innerHTML = `<span class="cit-field-tag">${escHtml(f.tag)}</span><span class="cit-field-val">${escHtml(v || '–')}</span>`;
+    fieldsList.appendChild(fRow);
+  });
+  row.appendChild(fieldsList);
+
+  return row;
 }
 
 // ---- Generic "add" dropdown button (portal — rendered in body) ----
