@@ -337,8 +337,8 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 
 .mapping-layout {
   display: grid;
-  grid-template-columns: 360px 1fr 260px;
-  gap: 16px;
+  grid-template-columns: 180px 260px 1fr 240px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -848,3 +848,20 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   font-weight: 700;
   flex-shrink: 0;
 }
+
+/* ---- Mapping: 4-column layout ---- */
+.mapping-cols {
+  background: #fff;
+  border: 1px solid #e0e4eb;
+  border-radius: 10px;
+  padding: 14px;
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.mapping-cols .palette-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.mapping-cols .palette-hint  { font-size: 11px; color: #aaa; margin-bottom: 10px; line-height: 1.4; }
+.mapping-cols .palette-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #aaa; letter-spacing: 0.5px; margin: 10px 0 5px; }
+/* 2-col chip grid inside mapping-cols */
+.mapping-cols .chip-grid { grid-template-columns: 1fr 1fr; }

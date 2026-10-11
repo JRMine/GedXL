@@ -3,10 +3,11 @@
  */
 
 // ---- DOM Refs (Mapping) — geladen lazy da erst bei Schritt 3 im DOM ----
-let mappingLeft, mappingRight, previewCard, btnAddPerson, previewRowSelect;
+let mappingLeft, mappingCols, mappingRight, previewCard, btnAddPerson, previewRowSelect;
 
 function initMappingDomRefs() {
   mappingLeft       = document.getElementById('mapping-left');
+  mappingCols       = document.getElementById('mapping-cols');
   mappingRight      = document.getElementById('mapping-right');
   previewCard       = document.getElementById('preview-card');
   btnAddPerson      = document.getElementById('btn-add-person');
@@ -47,8 +48,9 @@ function initMapping() {
 // ---- Column palette (left side) ----
 function renderColumnPalette() {
   mappingLeft.innerHTML = '';
+  mappingCols.innerHTML = '';
 
-  // Collect all already-used colIdx values across all persons/events
+  // Collect used colIdx values
   const usedCols = new Set();
   mappingPersons.forEach(p => {
     const collectFields = fields => fields.forEach(f => f.sources.forEach(s => { if (s.type === 'col') usedCols.add(s.colIdx); }));
@@ -56,15 +58,105 @@ function renderColumnPalette() {
     p.events.forEach(ev => collectFields(ev.fields));
   });
 
-  const title = document.createElement('h3');
-  title.className = 'palette-title';
-  title.textContent = 'Verfügbare Spalten';
-  mappingLeft.appendChild(title);
+  // ---- mappingCols: Tabellenspalten ----
+  const colsTitle = document.createElement('h3');
+  colsTitle.className = 'palette-title';
+  colsTitle.textContent = 'Verfügbare Spalten';
+  mappingCols.appendChild(colsTitle);
+  const colsHint = document.createElement('p');
+  colsHint.className = 'palette-hint';
+  colsHint.textContent = 'Per Drag & Drop auf ein Feld ziehen.';
+  mappingCols.appendChild(colsHint);
 
-  const hint = document.createElement('p');
-  hint.className = 'palette-hint';
-  hint.textContent = 'Spalten per Drag & Drop auf ein Feld ziehen.';
-  mappingLeft.appendChild(hint);
+  const colTitle = document.createElement('div');
+  colTitle.className = 'palette-section-title';
+  colTitle.textContent = '📋 Tabellenspalten';
+  mappingCols.appendChild(colTitle);
+  const colGrid = document.createElement('div');
+  colGrid.className = 'chip-grid';
+  headers.forEach((colName, colIdx) => {
+    if (ignoredColumns.has(colIdx)) return;
+    const example = getColExample(colIdx);
+    const used = usedCols.has(colIdx);
+    const chip = document.createElement('div');
+    chip.className = 'col-chip' + (used ? ' col-chip-used' : '');
+    chip.title = used ? 'Bereits zugeordnet' : colName;
+    chip.draggable = true;
+    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}${used ? ' <span class="chip-used-dot">✓</span>' : ''}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
+    chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'col', colIdx, label: colName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+    colGrid.appendChild(chip);
+  });
+  mappingCols.appendChild(colGrid);
+
+  // ---- mappingLeft: Globale Vars + Static + Quellen ----
+  const leftTitle = document.createElement('h3');
+  leftTitle.className = 'palette-title';
+  leftTitle.textContent = 'Extras';
+  mappingLeft.appendChild(leftTitle);
+
+  const gvars = collectGlobalVars();
+  if (Object.keys(gvars).length > 0) {
+    const gTitle = document.createElement('div');
+    gTitle.className = 'palette-section-title';
+    gTitle.textContent = '🔖 Globale Variablen';
+    mappingLeft.appendChild(gTitle);
+    const gGrid = document.createElement('div');
+    gGrid.className = 'chip-grid-single';
+    Object.entries(gvars).forEach(([varName, value]) => {
+      const chip = document.createElement('div');
+      chip.className = 'col-chip var-chip';
+      chip.draggable = true;
+      chip.innerHTML = `<span class="chip-name">${escHtml(varName)}</span><span class="chip-val">${escHtml(value)}</span>`;
+      chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'var', varName, label: varName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+      gGrid.appendChild(chip);
+    });
+    mappingLeft.appendChild(gGrid);
+  }
+
+  const staticTitle = document.createElement('div');
+  staticTitle.className = 'palette-section-title';
+  staticTitle.textContent = '✏️ Manuelle Eingabe';
+  mappingLeft.appendChild(staticTitle);
+  const staticGrid = document.createElement('div');
+  staticGrid.className = 'chip-grid-single';
+  const staticChip = document.createElement('div');
+  staticChip.className = 'col-chip static-chip';
+  staticChip.draggable = true;
+  staticChip.innerHTML = `<span class="chip-name">✏️ Fester Wert</span><span class="chip-val">für alle Zeilen gleich</span>`;
+  staticChip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'static', value: '', label: 'Fester Wert' }; staticChip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+  staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
+  staticGrid.appendChild(staticChip);
+  mappingLeft.appendChild(staticGrid);
+
+  if (sourceDefs.length > 0) {
+    const srcTitle = document.createElement('div');
+    srcTitle.className = 'palette-section-title';
+    srcTitle.textContent = '📚 Quellen';
+    mappingLeft.appendChild(srcTitle);
+    const srcHint = document.createElement('p');
+    srcHint.className = 'palette-hint';
+    srcHint.textContent = 'Auf Person oder Ereignis ziehen.';
+    mappingLeft.appendChild(srcHint);
+    const srcGrid = document.createElement('div');
+    srcGrid.className = 'chip-grid-single';
+    sourceDefs.forEach(src => {
+      const chip = document.createElement('div');
+      chip.className = 'col-chip src-chip';
+      chip.draggable = true;
+      const dataRow = getFirstDataRow();
+      const modeLabel = src.mode === 'existing'
+        ? `ID: ${src.existingId || '?'}`
+        : (src.sourceFields.find(f => f.tag === 'TITL') ? previewSourceField(src.sourceFields.find(f => f.tag === 'TITL'), dataRow) || src.name : src.name);
+      chip.innerHTML = `<span class="chip-name">📚 ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
+      chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'source', sourceId: src.id, label: src.name }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+      srcGrid.appendChild(chip);
+    });
+    mappingLeft.appendChild(srcGrid);
+  }
+}
 
   const gvars = collectGlobalVars();
   if (Object.keys(gvars).length > 0) {
