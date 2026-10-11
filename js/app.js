@@ -17,6 +17,7 @@ let sheetImportDone  = [];
 let sourceSheets = {};
 
 // ---- DOM Refs ----
+const stepStart    = document.getElementById('step-start');
 const stepUpload   = document.getElementById('step-upload');
 const stepSheets   = document.getElementById('step-sheets');
 const stepProject  = document.getElementById('step-project');
@@ -44,7 +45,7 @@ const navItems     = {
 let currentStep = 1;
 
 function showStep(stepEl, stepNum) {
-  [stepUpload, stepSheets, stepProject, stepImport,
+  [stepStart, stepUpload, stepSheets, stepProject, stepImport,
    document.getElementById('step-sources'),
    document.getElementById('step-mapping'),
    document.getElementById('step-export')
@@ -65,6 +66,12 @@ function updateNav(activeNum) {
     else el.classList.add('disabled');
   });
 }
+
+// ---- Startseite ----
+['btn-start', 'btn-start2'].forEach(id => {
+  const btn = document.getElementById(id);
+  if (btn) btn.addEventListener('click', () => showStep(stepUpload, 1));
+});
 
 // ---- Back button ----
 btnBack.addEventListener('click', () => {
@@ -97,8 +104,9 @@ btnBack.addEventListener('click', () => {
     } else {
       showStep(stepUpload, 1);
     }
-  } else if (currentStep === 1 && document.getElementById('step-sheets').classList.contains('active')) {
-    showStep(stepUpload, 1);
+  } else if (currentStep === 1) {
+    showStep(stepStart, 0);
+  }
   }
 });
 

@@ -44,6 +44,101 @@
 
   <main class="app-main">
 
+    <!-- STEP 0: Startseite -->
+    <section id="step-start" class="step active">
+      <div class="start-hero">
+        <div class="start-logo">GedXL</div>
+        <div class="start-subtitle">Excel &amp; CSV zu GEDCOM &ndash; direkt im Browser</div>
+        <p class="start-desc">
+          Du hast genealogische Daten in einer Tabelle &ndash; und willst sie in ein Genealogieprogramm
+          wie GRAMPS, Ahnenblatt oder Ancestry importieren? GedXL hilft dir dabei.
+        </p>
+        <button id="btn-start" class="btn-primary btn-large btn-start-cta">Jetzt starten &#8594;</button>
+      </div>
+
+      <div class="start-howto">
+        <h2 class="start-section-title">So funktioniert es</h2>
+        <div class="start-steps">
+          <div class="start-step">
+            <div class="start-step-icon">&#128196;</div>
+            <div class="start-step-num">1</div>
+            <div class="start-step-title">Datei hochladen</div>
+            <div class="start-step-desc">Excel (.xlsx) oder CSV-Datei ausw&auml;hlen oder per Drag &amp; Drop einwerfen. Die Datei verlässt deinen Computer nie &mdash; alles läuft lokal im Browser.</div>
+          </div>
+          <div class="start-step-arrow">&#8594;</div>
+          <div class="start-step">
+            <div class="start-step-icon">&#9881;</div>
+            <div class="start-step-num">2</div>
+            <div class="start-step-title">Projekteinstellungen</div>
+            <div class="start-step-desc">GEDCOM-Version w&auml;hlen (5.5.1 oder 7.0), Sprache und Metadaten festlegen.</div>
+          </div>
+          <div class="start-step-arrow">&#8594;</div>
+          <div class="start-step">
+            <div class="start-step-icon">&#128270;</div>
+            <div class="start-step-num">3</div>
+            <div class="start-step-title">Import-Check</div>
+            <div class="start-step-desc">GedXL erkennt automatisch Kopfzeilen, Datenzeilen und Jahresangaben die f&uuml;r mehrere Zeilen gelten. Du kannst alles korrigieren.</div>
+          </div>
+          <div class="start-step-arrow">&#8594;</div>
+          <div class="start-step">
+            <div class="start-step-icon">&#128218;</div>
+            <div class="start-step-num">4</div>
+            <div class="start-step-title">Quellen</div>
+            <div class="start-step-desc">Quellenangaben konfigurieren: welches Kirchenbuch, welche Seite. Einmal einstellen, automatisch f&uuml;r alle Zeilen &uuml;bernommen.</div>
+          </div>
+          <div class="start-step-arrow">&#8594;</div>
+          <div class="start-step">
+            <div class="start-step-icon">&#128101;</div>
+            <div class="start-step-num">5</div>
+            <div class="start-step-title">Mapping</div>
+            <div class="start-step-desc">Welche Tabellenspalte geh&ouml;rt zu welchem GEDCOM-Feld? Per Drag &amp; Drop zuordnen. Mehrere Personen pro Zeile m&ouml;glich (z.&thinsp;B. T&auml;ufling + Vater + Mutter).</div>
+          </div>
+          <div class="start-step-arrow">&#8594;</div>
+          <div class="start-step">
+            <div class="start-step-icon">&#11015;</div>
+            <div class="start-step-num">6</div>
+            <div class="start-step-title">Export</div>
+            <div class="start-step-desc">Fertige GEDCOM-Datei herunterladen und in dein Genealogieprogramm importieren. Datum-Pr&uuml;fliste zeigt was automatisch konvertiert wurde.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="start-features">
+        <h2 class="start-section-title">Das Besondere</h2>
+        <div class="start-feature-grid">
+          <div class="start-feature">
+            <span class="start-feature-icon">&#128274;</span>
+            <strong>100% lokal</strong>
+            Deine Daten verlassen niemals deinen Computer. Kein Server, kein Upload, kein Account.
+          </div>
+          <div class="start-feature">
+            <span class="start-feature-icon">&#128197;</span>
+            <strong>Historische Daten</strong>
+            Kirchliche Feste (Johannis, Michaelis&nbsp;…), alte Schreibweisen und Doppeljahre werden automatisch in GEDCOM-Datumsformat &uuml;bersetzt.
+          </div>
+          <div class="start-feature">
+            <span class="start-feature-icon">&#127888;</span>
+            <strong>Mehrere Personen pro Zeile</strong>
+            T&auml;ufling, Vater, Mutter, Paten &mdash; alle aus einer Tabellenzeile, richtig verkn&uuml;pft im GEDCOM.
+          </div>
+          <div class="start-feature">
+            <span class="start-feature-icon">&#128190;</span>
+            <strong>Profile speichern</strong>
+            Mapping einmal einrichten, als Profil speichern und beim n&auml;chsten Mal sofort laden.
+          </div>
+        </div>
+      </div>
+
+      <div class="start-bottom">
+        <button id="btn-start2" class="btn-primary btn-large">Los geht&apos;s &#8594;</button>
+        <p class="start-note">
+          &#9888; GedXL befindet sich in aktiver Entwicklung.
+          GEDCOM&nbsp;7.0 ist noch nicht vollst&auml;ndig implementiert.
+          Feedback willkommen: <a href="mailto:contact@stories-through-time.de">contact@stories-through-time.de</a>
+        </p>
+      </div>
+    </section>
+
     <!-- STEP 1: Upload -->
     <section id="step-upload" class="step active">
       <h2 class="step-title"><span class="step-num">1</span> Datei hochladen</h2>
