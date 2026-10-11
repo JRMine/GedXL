@@ -2,13 +2,22 @@
 
 **GedXL** ist ein webbasiertes Tool zur Konvertierung von tabellarischen genealogischen Daten (Excel/CSV) in GEDCOM-Dateien.
 
-> ⚠️ Projekt in Entwicklung — noch nicht veröffentlicht.
+> ⚠️ Projekt in aktiver Entwicklung — Feedback willkommen!
+
+## 🌐 Live-Demo
+
+**https://jrmine.github.io/GedXL/**
+
+Die App läuft vollständig im Browser — kein Login, keine Installation nötig.
+
+---
 
 ## Überblick
 
 - **Plattform:** Webapp, läuft vollständig im Browser (kein Backend, kein Server nötig)
 - **Verarbeitung:** Dateien bleiben lokal im Browser → datenschutzfreundlich
-- **Geplante Veröffentlichung:** wiki.genealogy.net/GedXL (Verein für Computergenealogie)
+- **Hauptrepo:** https://gitlab.genealogy.net/jasminriegler/gedxl *(Verein für Computergenealogie)*
+- **Mirror + Pages:** https://github.com/JRMine/GedXL
 
 ---
 
@@ -17,7 +26,10 @@
 ### Schritt 1 — Upload
 Excel (.xlsx) oder CSV hochladen. Wird im Browser geparst (SheetJS), nichts wird an einen Server geschickt. Alle Tabellenblätter werden erkannt.
 
-### Schritt 2 — Import-Check *(vor dem Mapping)*
+### Schritt 2 — Projekteinstellungen
+GEDCOM-Version (5.5.1 oder 7.0), Zeichensatz, Sprache, Dateiname und Metadaten (Bearbeiter, Notiz) festlegen. Live Header-Vorschau.
+
+### Schritt 3 — Import-Check
 Jede Zeile wird klassifiziert:
 
 | Typ | Beispiel |
@@ -29,57 +41,60 @@ Jede Zeile wird klassifiziert:
 
 Dazu: Spaltenanalyse mit Füllstand ("80% belegt").
 
-### Schritt 3 — Mapping (Split-Dashboard)
-- **Links:** Tabellenspalten mit Beispieldatensätzen + Füllstand
-- **Rechts:** Zielstruktur wie im Genealogieprogramm — Personen und Ereignisse per `+` anlegen, Spalten per Drag & Drop zuordnen
-- Mehrere Spalten kombinierbar, z.B. `{Tag}.{Monat}.{Jahr}` → gültiges GEDCOM-Datum
-- Manuelle Ergänzungen möglich (statische Werte für alle Zeilen)
-- Live-Vorschau der Personenkarte
-- Eltern/Kinder/Partner händisch zuordenbar
+### Schritt 4 — Quellenangaben
+Quellen per Drag & Drop konfigurieren. Felder können aus Tabellenspalten, globalen Variablen oder als feste Werte belegt werden. Automatische und manuelle Zitationen an Personen und Ereignissen.
+
+### Schritt 5 — Mapping
+- **Links:** verfügbare Tabellenspalten als Chips
+- **Mitte:** Zielstruktur — Personen und Ereignisse anlegen, Spalten per Drag & Drop zuordnen (~100 GEDCOM-Felder, 35 Ereignistypen)
+- Mehrere Personen pro Zeile möglich (z.B. Täufling + Vater + Mutter)
+- Beziehungen (Eltern/Kind/Partner) verknüpfbar
+- Live-Vorschau des generierten GEDCOM
 - Mappings als **Profile speichern/laden** (JSON)
 
-### Schritt 4 — Werte-Normalisierung
-Wählbare Parser pro Feld (Datum, Ort, Name). Wenn ein Wert nicht erkannt wird (z.B. *"um Johannis 1782"*) → **"nicht normalisiert"-Marker** → Wert landet im GEDCOM `NOTE`-Feld statt verloren zu gehen.
-
-### Schritt 5 — Quellenangaben (4 Modi)
-| Modus | Wann |
-|-------|------|
-| Aus der Tabelle (Spalte mappen) | Quelle variiert je Zeile |
-| Anderes Tabellenblatt | z.B. Sheet "Quelle und Bearbeiter" |
-| **Statisch + Citations aus Spalte** ⭐ | Eine Quelle für alle, Seitenzahl je Zeile |
-| Vorhandene Quell-ID | Verweis auf bestehendes GEDCOM |
-
 ### Schritt 6 — Export
-- GEDCOM 5.5.1 (Standard) oder 7.0
-- Live-Validierung vor Export: *"23 Zeilen ohne Namen"*, *"12 Datumsangaben nicht erkannt"*
+- GEDCOM 5.5.1 oder 7.0 herunterladen
+- Datum-Prüfliste: historische Datumsangaben (z.B. *„um Johannis 1782"*) werden automatisch konvertiert, nicht erkannte als CSV exportierbar
 
 ---
 
-## MVP (erste Ausbaustufe)
+## ⚠️ Bekannte Einschränkungen / noch nicht fertig
 
-- [ ] Upload Excel/CSV
-- [ ] Import-Check mit Zeilenklassifikation
-- [ ] Split-Dashboard Mapping
-- [ ] Globale Variablen aus Zwischenüberschriften
-- [ ] Quelle: Statisch + Citations
-- [ ] NOTE-Fallback für nicht normalisierbare Werte
-- [ ] GEDCOM 5.5.1 Export
-- [ ] Profile speichern/laden
-
-## Spätere Ausbaustufen
-
-- [ ] Beziehungs-Mapping (Eltern/Kind/Partner)
-- [ ] Duplikaterkennung über mehrere Dateien
-- [ ] GEDCOM 7.0
+- **GEDCOM 7.0** — Grundstruktur vorhanden (kein CHAR-Tag, NOTE als eigene Records), aber noch nicht vollständig getestet und validiert
+- **Quellenblätter** — separate Tabellenblätter als Quelldaten-Lookup noch nicht implementiert
+- **Beziehungs-IDs** — Eltern/Kind/Partner-Links werden zwar erfasst, aber die FAM-Record-Generierung ist noch rudimentär
+- **Duplikaterkennung** über mehrere Dateien fehlt noch
 
 ---
 
 ## Entwicklung
 
-```bash
+```powershell
 # Lokales Entwickeln — einfach index.html im Browser öffnen
-# Kein Build-Schritt nötig für den MVP
+# Kein Build-Schritt nötig
+
+# Änderungen pushen (beide Repos):
+git add -A
+git commit -m "Beschreibung"
+git push origin master   # → GitLab (Vereinsrepo, Hauptrepo)
+git push github master   # → GitHub (Live-Demo via GitHub Pages)
 ```
+
+### Remotes einrichten (einmalig)
+```powershell
+git remote add origin https://gitlab.genealogy.net/jasminriegler/gedxl.git
+git remote add github https://github.com/JRMine/GedXL.git
+```
+
+---
+
+## Technologie
+
+- Kein Build-Schritt, kein Framework — reines HTML/CSS/JavaScript
+- [SheetJS](https://sheetjs.com/) via CDN für Excel-Parsing
+- Historischer Datumsparser für kirchliche Feste, Qualifikatoren (ABT/BEF/AFT), Altstil, Doppeljahre
+
+---
 
 ## Lizenz
 
