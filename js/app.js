@@ -525,12 +525,16 @@ chkHideEmpty.addEventListener('change', () => {
 
 // ---- Check next button ----
 function checkNextButton() {
-  const hasHeader = classifications.some(c => c.type === 'HEADER');
-  const hasData   = classifications.some(c => c.type === 'DATA');
-  btnNext.disabled = !(hasHeader && hasData);
-  nextHint.textContent = btnNext.disabled
-    ? 'Bitte mindestens eine Header-Zeile und Datenzeilen best\u00e4tigen.'
-    : `Bereit: ${classifications.filter(c => c.type === 'DATA').length} Datenzeilen erkannt.`;
+  const hasHeader  = classifications.some(c => c.type === 'HEADER');
+  const hasData    = classifications.some(c => c.type === 'DATA');
+  const hasGlobals = classifications.some(c => c.type === 'GLOBAL_VAR');
+  const ok = (hasHeader && hasData) || hasGlobals;
+  btnNext.disabled = !ok;
+  nextHint.textContent = ok
+    ? (hasData
+        ? `Bereit: ${classifications.filter(c => c.type === 'DATA').length} Datenzeilen erkannt.`
+        : `Bereit: ${classifications.filter(c => c.type === 'GLOBAL_VAR').length} globale Variable(n) erkannt.`)
+    : 'Bitte mindestens eine Header-Zeile und Datenzeilen best\u00e4tigen.';
   updateNextButtonLabel();
 }
 
