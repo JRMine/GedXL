@@ -242,6 +242,7 @@ function loadSheets(roleMap) {
 }
 
 function loadNextSheetForCheck() {
+  console.log('[GedXL] loadNextSheetForCheck, queue:', sheetImportQueue.map(s=>s.name), 'done:', sheetImportDone.map(s=>s.name));
   if (sheetImportQueue.length === 0) {
     finalizeMerge();
     return;
