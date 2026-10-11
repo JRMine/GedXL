@@ -528,13 +528,7 @@ function escHtml(str) {
 
 // ---- Next button (Import-Check → naechstes Blatt oder Quelleneinstellungen) ----
 btnNext.addEventListener('click', () => {
-  if (sheetImportQueue.length > 0) {
-    finalizeCurrentSheet(); // laedt naechstes Blatt oder finalizeMerge
-  } else {
-    // Einzelnes Blatt (kein Queue-Betrieb)
-    initSources();
-    showStep(document.getElementById('step-sources'), 3);
-  }
+  finalizeCurrentSheet();
 });
 
 // Weiter-Button Label dynamisch anpassen
