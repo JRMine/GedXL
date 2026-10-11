@@ -220,43 +220,78 @@ function renderPersonList() {
       person.relatives.forEach(rel => {
         const relItem = document.createElement('div');
         relItem.className = 'rel-item';
+        const isFam = ['Vater','Mutter','Kind','Partner','Geschwister'].includes(rel.role);
         const roleOpts = ['Vater','Mutter','Kind','Partner','Geschwister'].map(r =>
           '<option value="' + r + '"' + (rel.role === r ? ' selected' : '') + '>' + r + '</option>').join('');
         const personOpts = otherPersons.map(p =>
           '<option value="' + p.id + '"' + (rel.targetPersonId === p.id ? ' selected' : '') + '>' + escHtml(p.label) + '</option>').join('');
-        relItem.innerHTML = '<span class="rel-desc">ist</span>' +
-          '<select class="rel-role-sel">' + roleOpts + '</select>' +
+        relItem.innerHTML =
+          '<span class="rel-badge ' + (isFam ? 'rel-fam' : 'rel-asso') + '">' + (isFam ? 'FAM' : 'ASSO') + '</span>' +
+          '<span class="rel-desc">ist</span>' +
+          (isFam
+            ? '<select class="rel-role-sel">' + roleOpts + '</select>'
+            : '<input class="rel-role-input" value="' + escHtml(rel.role) + '" placeholder="z.B. Pate, Zeuge..." />') +
           '<span class="rel-desc">von</span>' +
           '<select class="rel-person-sel">' + personOpts + '</select>' +
+          '<button class="btn-icon rel-toggle-btn" title="' + (isFam ? 'Zu ASSO wechseln' : 'Zu FAM wechseln') + '">' + (isFam ? '&#8594;ASSO' : '&#8594;FAM') + '</button>' +
           '<button class="btn-icon" title="Entfernen">&#10005;</button>';
-        relItem.querySelector('.rel-role-sel').addEventListener('change', e => { rel.role = e.target.value; renderPreview(); });
+
+        if (isFam) {
+          relItem.querySelector('.rel-role-sel').addEventListener('change', e => { rel.role = e.target.value; renderPersonList(); renderPreview(); });
+        } else {
+          relItem.querySelector('.rel-role-input').addEventListener('input', e => { rel.role = e.target.value; renderPreview(); });
+        }
         relItem.querySelector('.rel-person-sel').addEventListener('change', e => { rel.targetPersonId = e.target.value; renderPreview(); });
-        relItem.querySelector('.btn-icon').addEventListener('click', () => {
+        relItem.querySelector('.rel-toggle-btn').addEventListener('click', () => {
+          rel.role = isFam ? 'Pate' : 'Kind';
+          renderPersonList(); renderPreview();
+        });
+        relItem.querySelector('.btn-icon:last-child').addEventListener('click', () => {
           person.relatives = person.relatives.filter(r => r.id !== rel.id);
           renderPersonList(); renderPreview();
         });
         relList.appendChild(relItem);
       });
       relSection.appendChild(relList);
-      const addRelBtn = document.createElement('button');
-      addRelBtn.className = 'btn-secondary btn-small';
-      addRelBtn.textContent = '+ Beziehung hinzufuegen';
-      addRelBtn.addEventListener('click', () => {
-        person.relatives.push({ id: newId(), role: 'Vater', targetPersonId: otherPersons[0].id });
+
+      const btnWrap = document.createElement('div');
+      btnWrap.className = 'rel-add-btns';
+      const addFamBtn = document.createElement('button');
+      addFamBtn.className = 'btn-secondary btn-small';
+      addFamBtn.textContent = '+ FAM-Beziehung';
+      addFamBtn.title = 'Vater, Mutter, Kind, Partner, Geschwister';
+      addFamBtn.addEventListener('click', () => {
+        person.relatives.push({ id: newId(), role: 'Kind', targetPersonId: otherPersons[0].id });
         renderPersonList(); renderPreview();
       });
-      relSection.appendChild(addRelBtn);
+      const addAssoBtn = document.createElement('button');
+      addAssoBtn.className = 'btn-secondary btn-small';
+      addAssoBtn.textContent = '+ ASSO-Beziehung';
+      addAssoBtn.title = 'Pate, Zeuge, Arbeitgeber, beliebige Rolle...';
+      addAssoBtn.addEventListener('click', () => {
+        person.relatives.push({ id: newId(), role: 'Pate', targetPersonId: otherPersons[0].id });
+        renderPersonList(); renderPreview();
+      });
+      btnWrap.appendChild(addFamBtn);
+      btnWrap.appendChild(addAssoBtn);
+      relSection.appendChild(btnWrap);
     }
     card.appendChild(relSection);
 
     // Implied (reverse) relationships from other persons
     const reverseRoleMap = { 'Vater': 'Kind', 'Mutter': 'Kind', 'Kind': 'Elternteil', 'Partner': 'Partner', 'Geschwister': 'Geschwister' };
+    const FAM_ROLES = ['Vater','Mutter','Kind','Partner','Geschwister'];
     const impliedRels = [];
     mappingPersons.forEach(other => {
       if (other.id === person.id) return;
       other.relatives.forEach(rel => {
         if (rel.targetPersonId === person.id) {
-          impliedRels.push({ fromLabel: other.label, role: reverseRoleMap[rel.role] || rel.role });
+          const isFam = FAM_ROLES.includes(rel.role);
+          impliedRels.push({
+            fromLabel: other.label,
+            role: isFam ? (reverseRoleMap[rel.role] || rel.role) : rel.role,
+            type: isFam ? 'FAM' : 'ASSO'
+          });
         }
       });
     });
@@ -267,7 +302,7 @@ function renderPersonList() {
       impliedRels.forEach(ir => {
         const item = document.createElement('div');
         item.className = 'implied-rel-item';
-        item.textContent = 'ist ' + ir.role + ' von ' + ir.fromLabel;
+        item.innerHTML = '<span class="rel-badge ' + (ir.type === 'FAM' ? 'rel-fam' : 'rel-asso') + '">' + ir.type + '</span> ist ' + escHtml(ir.role) + ' von ' + escHtml(ir.fromLabel);
         impliedSection.appendChild(item);
       });
       const note = document.createElement('p');
