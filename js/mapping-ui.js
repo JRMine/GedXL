@@ -4,6 +4,20 @@
 
 let mappingLeft, mappingCols, mappingRight, previewCard, btnAddPerson, previewRowSelect;
 
+// Baut gruppierte Options-Liste fuer das Ereignis-Dropdown
+function buildEventOptions() {
+  const result = [];
+  let lastGroup = null;
+  GEDCOM_EVENT_TYPES.forEach(e => {
+    if (e.group !== lastGroup) {
+      result.push({ path: '__group__', label: e.group });
+      lastGroup = e.group;
+    }
+    result.push({ path: e.tag, label: e.label });
+  });
+  return result;
+}
+
 function initMappingDomRefs() {
   mappingLeft      = document.getElementById('mapping-left');
   mappingCols      = document.getElementById('mapping-cols');
@@ -249,7 +263,7 @@ function renderPersonList() {
     evSection.className = 'fields-section';
     evSection.innerHTML = '<div class="fields-section-title">Ereignisse</div>';
     person.events.forEach(ev => evSection.appendChild(renderEvent(ev, person)));
-    evSection.appendChild(createAddButton('+ Ereignis hinzufuegen', GEDCOM_EVENT_TYPES.map(e => ({path: e.tag, label: e.label})), tag => {
+    evSection.appendChild(createAddButton('+ Ereignis hinzufuegen', buildEventOptions(), tag => {
       addEvent(person, tag); renderPersonList(); renderPreview();
     }));
     card.appendChild(evSection);

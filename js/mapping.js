@@ -17,12 +17,48 @@ const GEDCOM_PERSON_FIELDS = [
 ];
 
 const GEDCOM_EVENT_TYPES = [
-  { tag: 'EDUC', label: 'Ausbildung / Schulbesuch (EDUC)' },
-  { tag: 'BIRT', label: 'Geburt (BIRT)' },
-  { tag: 'DEAT', label: 'Tod (DEAT)' },
-  { tag: 'RESI', label: 'Wohnort (RESI)' },
-  { tag: 'OCCU', label: 'Beruf (OCCU)' },
-  { tag: 'EVEN', label: 'Benutzerdefiniertes Ereignis (EVEN)' },
+  // ---- Lebens-Ereignisse ----
+  { tag: 'BIRT', label: 'Geburt (BIRT)',              group: 'Leben' },
+  { tag: 'CHR',  label: 'Taufe / Christening (CHR)',  group: 'Leben' },
+  { tag: 'BAPM', label: 'Taufe / Baptism (BAPM)',     group: 'Leben' },
+  { tag: 'DEAT', label: 'Tod (DEAT)',                 group: 'Leben' },
+  { tag: 'BURI', label: 'Bestattung (BURI)',          group: 'Leben' },
+  { tag: 'CREM', label: 'Einäscherung (CREM)',        group: 'Leben' },
+  { tag: 'ADOP', label: 'Adoption (ADOP)',            group: 'Leben' },
+  // ---- Kirchlich / Konfession ----
+  { tag: 'FCOM', label: 'Erstkommunion (FCOM)',       group: 'Kirche' },
+  { tag: 'CONF', label: 'Konfirmation (CONF)',        group: 'Kirche' },
+  { tag: 'ORDN', label: 'Ordination (ORDN)',          group: 'Kirche' },
+  { tag: 'RELI', label: 'Religion (RELI)',            group: 'Kirche' },
+  // ---- Ehe & Familie ----
+  { tag: 'MARR', label: 'Heirat (MARR)',              group: 'Familie' },
+  { tag: 'ENGA', label: 'Verlobung (ENGA)',           group: 'Familie' },
+  { tag: 'MARB', label: 'Aufgebot (MARB)',            group: 'Familie' },
+  { tag: 'MARC', label: 'Ehevertrag (MARC)',          group: 'Familie' },
+  { tag: 'MARL', label: 'Ehelizenz (MARL)',           group: 'Familie' },
+  { tag: 'MARS', label: 'Eheabrechnungsvertrag (MARS)', group: 'Familie' },
+  { tag: 'DIVF', label: 'Scheidungsantrag (DIVF)',    group: 'Familie' },
+  { tag: 'DIV',  label: 'Scheidung (DIV)',            group: 'Familie' },
+  // ---- Beruf & Bildung ----
+  { tag: 'OCCU', label: 'Beruf (OCCU)',               group: 'Beruf & Bildung' },
+  { tag: 'EDUC', label: 'Ausbildung / Schulbesuch (EDUC)', group: 'Beruf & Bildung' },
+  { tag: 'GRAD', label: 'Abschluss / Graduation (GRAD)', group: 'Beruf & Bildung' },
+  { tag: 'TITL', label: 'Titel / Stand (TITL)',       group: 'Beruf & Bildung' },
+  // ---- Militär ----
+  { tag: 'MILI', label: 'Militärdienst (MILI)',       group: 'Militär' },
+  // ---- Zivil & Recht ----
+  { tag: 'RESI', label: 'Wohnort (RESI)',             group: 'Zivil' },
+  { tag: 'EMIG', label: 'Auswanderung (EMIG)',        group: 'Zivil' },
+  { tag: 'IMMI', label: 'Einwanderung (IMMI)',        group: 'Zivil' },
+  { tag: 'NATU', label: 'Einbürgerung (NATU)',        group: 'Zivil' },
+  { tag: 'CENS', label: 'Volkszählung (CENS)',        group: 'Zivil' },
+  { tag: 'PROB', label: 'Testamentseröffnung (PROB)', group: 'Zivil' },
+  { tag: 'WILL', label: 'Testament (WILL)',           group: 'Zivil' },
+  { tag: 'PROP', label: 'Besitz / Eigentum (PROP)',   group: 'Zivil' },
+  { tag: 'NCHI', label: 'Anzahl Kinder (NCHI)',       group: 'Zivil' },
+  { tag: 'NMR',  label: 'Anzahl Ehen (NMR)',          group: 'Zivil' },
+  // ---- Sonstiges ----
+  { tag: 'EVEN', label: 'Benutzerdefiniertes Ereignis (EVEN)', group: 'Sonstiges' },
 ];
 
 const GEDCOM_EVENT_FIELDS = [

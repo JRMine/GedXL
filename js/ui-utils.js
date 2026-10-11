@@ -6,7 +6,7 @@ function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ---- Generic "add" dropdown button (portal) ----
+// ---- Generic "add" dropdown button (portal, supports groups) ----
 let activeDropdown = null;
 
 function closeActiveDropdown() {
@@ -16,6 +16,10 @@ function closeActiveDropdown() {
 document.addEventListener('click', closeActiveDropdown);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeActiveDropdown(); });
 
+/**
+ * options: [{path, label}]
+ *   path === '__group__' -> Gruppenüberschrift (nicht klickbar)
+ */
 function createAddButton(text, options, onSelect, small = false) {
   const btn = document.createElement('button');
   btn.className = (small ? 'btn-secondary btn-small' : 'btn-secondary') + ' add-btn';
@@ -27,6 +31,13 @@ function createAddButton(text, options, onSelect, small = false) {
     const dropdown = document.createElement('div');
     dropdown.className = 'add-dropdown-portal';
     options.forEach(opt => {
+      if (opt.path === '__group__') {
+        const grp = document.createElement('div');
+        grp.className = 'add-dropdown-group';
+        grp.textContent = opt.label;
+        dropdown.appendChild(grp);
+        return;
+      }
       const item = document.createElement('div');
       item.className = 'add-dropdown-item';
       item.textContent = opt.label;
@@ -41,10 +52,11 @@ function createAddButton(text, options, onSelect, small = false) {
     activeDropdown = dropdown;
     const rect = btn.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
-    const dropH = Math.min(options.length * 38, 280);
+    const itemCount = options.filter(o => o.path !== '__group__').length;
+    const dropH = Math.min(itemCount * 34 + options.filter(o => o.path === '__group__').length * 28, 320);
     dropdown.style.position = 'fixed';
     dropdown.style.left = rect.left + 'px';
-    dropdown.style.minWidth = Math.max(rect.width, 240) + 'px';
+    dropdown.style.minWidth = Math.max(rect.width, 280) + 'px';
     if (spaceBelow >= dropH || spaceBelow >= 120) {
       dropdown.style.top = (rect.bottom + 4) + 'px';
     } else {

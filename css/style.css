@@ -1043,3 +1043,17 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .date-report-table code { background: #eef0f4; border-radius: 3px; padding: 1px 5px; font-size: 11px; }
 .report-row-error td { background: #fff5f5; color: #c0392b; }
 .report-row-error code { background: #fde8e8; }
+
+/* ---- Dropdown Gruppenüberschrift ---- */
+.add-dropdown-group {
+  padding: 6px 14px 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #8a94a6;
+  border-top: 1px solid #eef0f4;
+  margin-top: 2px;
+  pointer-events: none;
+}
+.add-dropdown-group:first-child { border-top: none; margin-top: 0; }
