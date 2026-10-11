@@ -1,5 +1,5 @@
 /**
- * app.js — GedXL Hauptlogik (Schritt 1 + 2)
+ * app.js - GedXL Hauptlogik (Schritt 1 + 2)
  */
 
 // ---- State ----
@@ -12,8 +12,8 @@ let varCounter = 1;
 let ignoredColumns = new Set();
 
 // Multi-sheet import queue
-let sheetImportQueue = [];   // [{name, role, rows}] — noch zu verarbeitende Blaetter
-let sheetImportDone  = [];   // [{name, role, rows, classifications, headers, ignoredColumns}] — abgeschlossen
+let sheetImportQueue = [];   // [{name, role, rows}] - noch zu verarbeitende Blaetter
+let sheetImportDone  = [];   // [{name, role, rows, classifications, headers, ignoredColumns}] - abgeschlossen
 let sourceSheets = {};       // { sheetName: rows[][] }
 
 // ---- DOM Refs ----
@@ -152,7 +152,7 @@ async function handleFile(file) {
   }
 }
 
-let sourceSheets = {}; // { sheetName: rows[][] } — Quellen-Blaetter
+sourceSheets = {}; // reset
 
 function proceedFromUpload() {
   if (!parsedFile) return;
@@ -213,7 +213,7 @@ document.getElementById('btn-sheets-next').addEventListener('click', () => {
   loadSheets(roleMap);
 });
 
-// ---- Load sheets by role — build queue ----
+// ---- Load sheets by role - build queue ----
 function loadSheets(roleMap) {
   sourceSheets = {};
   sheetImportQueue = [];
@@ -349,7 +349,7 @@ function renderRowTable() {
     tdType.appendChild(sel);
     tr.appendChild(tdType);
 
-    // Variable name(s) — for GLOBAL_VAR: one input per non-empty cell
+    // Variable name(s) - for GLOBAL_VAR: one input per non-empty cell
     const tdVar = document.createElement('td');
     tdVar.className = 'td-varnames';
     if (cls.type === 'GLOBAL_VAR') {
@@ -389,7 +389,7 @@ function renderVarInputsForRow(container, row, rowIdx) {
     const lbl = document.createElement('span');
     lbl.className = 'varname-col-lbl';
     const colName = headers[colIdx] || `Sp.${colIdx + 1}`;
-    lbl.textContent = `Sp. „${colName}":`;
+    lbl.textContent = `Sp. "${colName}":`;
     lbl.title = `Spaltenname: ${colName}`;
 
     const inp = document.createElement('input');
@@ -455,7 +455,7 @@ function renderGlobalVars() {
   items.forEach(({ varName, value, rowNum }) => {
     const div = document.createElement('div');
     div.className = 'globalvar-item';
-    div.innerHTML = `<div class="globalvar-name">${escHtml(varName)}</div><div class="globalvar-value">Zeile ${rowNum}: „${escHtml(value)}"</div>`;
+    div.innerHTML = `<div class="globalvar-name">${escHtml(varName)}</div><div class="globalvar-value">Zeile ${rowNum}: "${escHtml(value)}"</div>`;
     globalvarsList.appendChild(div);
   });
 }
@@ -494,7 +494,7 @@ function renderColumnStats() {
         <div class="fill-bar"><div class="fill-bar-inner" style="width:${fillRate}%;background:${barColor}"></div></div>
         <span class="fill-pct">${fillRate}%</span>
       </div>
-      <div class="col-example">${escHtml(examples.slice(0, 2).join(', ') || '–')}</div>
+      <div class="col-example">${escHtml(examples.slice(0, 2).join(', ') || '-')}</div>
     `;
 
     div.querySelector('.col-ignore-chk').addEventListener('change', (e) => {
@@ -519,7 +519,6 @@ function checkNextButton() {
     ? 'Bitte mindestens eine Header-Zeile und Datenzeilen best\u00e4tigen.'
     : `Bereit: ${classifications.filter(c => c.type === 'DATA').length} Datenzeilen erkannt.`;
   updateNextButtonLabel();
-}
 }
 
 // ---- Utility ----
