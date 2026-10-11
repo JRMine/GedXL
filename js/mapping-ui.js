@@ -1,8 +1,8 @@
-/**
- * mapping-ui.js — Mapping Dashboard UI
+﻿/**
+ * mapping-ui.js â€” Mapping Dashboard UI
  */
 
-// ---- DOM Refs (Mapping) — geladen lazy da erst bei Schritt 3 im DOM ----
+// ---- DOM Refs (Mapping) â€” geladen lazy da erst bei Schritt 3 im DOM ----
 let mappingLeft, mappingCols, mappingRight, previewCard, btnAddPerson, previewRowSelect;
 
 function initMappingDomRefs() {
@@ -27,7 +27,7 @@ function initMappingDomRefs() {
   });
 }
 
-let dragSourceData = null; // { colIdx, label } — currently dragged column
+let dragSourceData = null; // { colIdx, label } â€” currently dragged column
 let activePersonId = null;
 
 // ---- Init mapping step ----
@@ -61,7 +61,7 @@ function renderColumnPalette() {
   // ---- mappingCols: Tabellenspalten ----
   const colsTitle = document.createElement('h3');
   colsTitle.className = 'palette-title';
-  colsTitle.textContent = 'Verfügbare Spalten';
+  colsTitle.textContent = 'VerfÃ¼gbare Spalten';
   mappingCols.appendChild(colsTitle);
   const colsHint = document.createElement('p');
   colsHint.className = 'palette-hint';
@@ -70,7 +70,7 @@ function renderColumnPalette() {
 
   const colTitle = document.createElement('div');
   colTitle.className = 'palette-section-title';
-  colTitle.textContent = '📋 Tabellenspalten';
+  colTitle.textContent = 'ðŸ“‹ Tabellenspalten';
   mappingCols.appendChild(colTitle);
   const colGrid = document.createElement('div');
   colGrid.className = 'chip-grid';
@@ -82,7 +82,7 @@ function renderColumnPalette() {
     chip.className = 'col-chip' + (used ? ' col-chip-used' : '');
     chip.title = used ? 'Bereits zugeordnet' : colName;
     chip.draggable = true;
-    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}${used ? ' <span class="chip-used-dot">✓</span>' : ''}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
+    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}${used ? ' <span class="chip-used-dot">âœ“</span>' : ''}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
     chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'col', colIdx, label: colName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
     chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
     colGrid.appendChild(chip);
@@ -99,7 +99,7 @@ function renderColumnPalette() {
   if (Object.keys(gvars).length > 0) {
     const gTitle = document.createElement('div');
     gTitle.className = 'palette-section-title';
-    gTitle.textContent = '🔖 Globale Variablen';
+    gTitle.textContent = 'ðŸ”– Globale Variablen';
     mappingLeft.appendChild(gTitle);
     const gGrid = document.createElement('div');
     gGrid.className = 'chip-grid-single';
@@ -117,14 +117,14 @@ function renderColumnPalette() {
 
   const staticTitle = document.createElement('div');
   staticTitle.className = 'palette-section-title';
-  staticTitle.textContent = '✏️ Manuelle Eingabe';
+  staticTitle.textContent = 'âœï¸ Manuelle Eingabe';
   mappingLeft.appendChild(staticTitle);
   const staticGrid = document.createElement('div');
   staticGrid.className = 'chip-grid-single';
   const staticChip = document.createElement('div');
   staticChip.className = 'col-chip static-chip';
   staticChip.draggable = true;
-  staticChip.innerHTML = `<span class="chip-name">✏️ Fester Wert</span><span class="chip-val">für alle Zeilen gleich</span>`;
+  staticChip.innerHTML = `<span class="chip-name">âœï¸ Fester Wert</span><span class="chip-val">fÃ¼r alle Zeilen gleich</span>`;
   staticChip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'static', value: '', label: 'Fester Wert' }; staticChip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
   staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
   staticGrid.appendChild(staticChip);
@@ -133,7 +133,7 @@ function renderColumnPalette() {
   if (sourceDefs.length > 0) {
     const srcTitle = document.createElement('div');
     srcTitle.className = 'palette-section-title';
-    srcTitle.textContent = '📚 Quellen';
+    srcTitle.textContent = 'ðŸ“š Quellen';
     mappingLeft.appendChild(srcTitle);
     const srcHint = document.createElement('p');
     srcHint.className = 'palette-hint';
@@ -149,7 +149,7 @@ function renderColumnPalette() {
       const modeLabel = src.mode === 'existing'
         ? `ID: ${src.existingId || '?'}`
         : (src.sourceFields.find(f => f.tag === 'TITL') ? previewSourceField(src.sourceFields.find(f => f.tag === 'TITL'), dataRow) || src.name : src.name);
-      chip.innerHTML = `<span class="chip-name">📚 ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
+      chip.innerHTML = `<span class="chip-name">ðŸ“š ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
       chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'source', sourceId: src.id, label: src.name }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
       chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
       srcGrid.appendChild(chip);
@@ -162,7 +162,7 @@ function renderColumnPalette() {
   if (Object.keys(gvars).length > 0) {
     const gTitle = document.createElement('div');
     gTitle.className = 'palette-section-title';
-    gTitle.textContent = '🔖 Globale Variablen';
+    gTitle.textContent = 'ðŸ”– Globale Variablen';
     mappingLeft.appendChild(gTitle);
     const gGrid = document.createElement('div');
     gGrid.className = 'chip-grid-single';
@@ -180,7 +180,7 @@ function renderColumnPalette() {
 
   const colTitle = document.createElement('div');
   colTitle.className = 'palette-section-title';
-  colTitle.textContent = '📋 Tabellenspalten';
+  colTitle.textContent = 'ðŸ“‹ Tabellenspalten';
   mappingLeft.appendChild(colTitle);
   const colGrid = document.createElement('div');
   colGrid.className = 'chip-grid';
@@ -192,7 +192,7 @@ function renderColumnPalette() {
     chip.className = 'col-chip' + (used ? ' col-chip-used' : '');
     chip.title = used ? 'Bereits zugeordnet' : '';
     chip.draggable = true;
-    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}${used ? ' <span class="chip-used-dot">✓</span>' : ''}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
+    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}${used ? ' <span class="chip-used-dot">âœ“</span>' : ''}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
     chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'col', colIdx, label: colName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
     chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
     colGrid.appendChild(chip);
@@ -201,14 +201,14 @@ function renderColumnPalette() {
 
   const staticTitle = document.createElement('div');
   staticTitle.className = 'palette-section-title';
-  staticTitle.textContent = '✏️ Manuelle Eingabe';
+  staticTitle.textContent = 'âœï¸ Manuelle Eingabe';
   mappingLeft.appendChild(staticTitle);
   const staticGrid = document.createElement('div');
   staticGrid.className = 'chip-grid-single';
   const staticChip = document.createElement('div');
   staticChip.className = 'col-chip static-chip';
   staticChip.draggable = true;
-  staticChip.innerHTML = `<span class="chip-name">✏️ Fester Wert</span><span class="chip-val">für alle Zeilen gleich</span>`;
+  staticChip.innerHTML = `<span class="chip-name">âœï¸ Fester Wert</span><span class="chip-val">fÃ¼r alle Zeilen gleich</span>`;
   staticChip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'static', value: '', label: 'Fester Wert' }; staticChip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
   staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
   staticGrid.appendChild(staticChip);
@@ -217,7 +217,7 @@ function renderColumnPalette() {
   if (sourceDefs.length > 0) {
     const srcTitle = document.createElement('div');
     srcTitle.className = 'palette-section-title';
-    srcTitle.textContent = '📚 Quellen';
+    srcTitle.textContent = 'ðŸ“š Quellen';
     mappingLeft.appendChild(srcTitle);
     const srcHint = document.createElement('p');
     srcHint.className = 'palette-hint';
@@ -233,7 +233,7 @@ function renderColumnPalette() {
       const modeLabel = src.mode === 'existing'
         ? `ID: ${src.existingId || '?'}`
         : (src.sourceFields.find(f => f.tag === 'TITL') ? previewSourceField(src.sourceFields.find(f => f.tag === 'TITL'), dataRow) || src.name : src.name);
-      chip.innerHTML = `<span class="chip-name">📚 ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
+      chip.innerHTML = `<span class="chip-name">ðŸ“š ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
       chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'source', sourceId: src.id, label: src.name }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
       chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
       srcGrid.appendChild(chip);
@@ -248,117 +248,13 @@ function getColExample(colIdx) {
   return v !== null && v !== undefined && String(v).trim() !== '' ? String(v).trim() : null;
 }
 
-// ---- Source Settings Block ----
-function renderSourceSettings() {  const container = document.getElementById('source-settings-block');
+// ---- Person list (right side) ----
+function renderPersonList() {
+  mappingRight.innerHTML = '';
+  renderColumnPalette(); // refresh used-state on chips
   if (!container) return;
   container.innerHTML = '';
 
-  const title = document.createElement('div');
-  title.className = 'source-block-title';
-  title.textContent = '📚 Quelleneinstellungen';
-  container.appendChild(title);
-
-  // Mode selector
-  const modeWrap = document.createElement('div');
-  modeWrap.className = 'source-mode-wrap';
-  const modes = [
-    { value: 'static', label: 'Feste Quelle + Seitenzahl aus Tabelle' },
-    { value: 'sheet',  label: 'Aus Tabellenblatt „Quelle und Bearbeiter"' },
-    { value: 'column', label: 'Quelle aus Spalte (je Zeile unterschiedlich)' },
-    { value: 'existing', label: 'Vorhandene GEDCOM-Quell-ID' },
-  ];
-  modes.forEach(m => {
-    const lbl = document.createElement('label');
-    lbl.className = 'source-mode-option';
-    lbl.innerHTML = `<input type="radio" name="source-mode" value="${m.value}" ${sourceSettings.mode === m.value ? 'checked' : ''} /> ${m.label}`;
-    lbl.querySelector('input').addEventListener('change', () => {
-      sourceSettings.mode = m.value;
-      renderSourceSettings();
-      renderPreview();
-    });
-    modeWrap.appendChild(lbl);
-  });
-  container.appendChild(modeWrap);
-
-  // Mode-specific fields
-  const detail = document.createElement('div');
-  detail.className = 'source-detail';
-
-  if (sourceSettings.mode === 'static') {
-    detail.innerHTML = `
-      <div class="source-field-row">
-        <label>Titel / Bezeichnung<input class="source-input" id="src-title" value="${escHtml(sourceSettings.title)}" placeholder="z.B. Verzeichnis der Schüler des Gymnasiums Bautzen" /></label>
-      </div>
-      <div class="source-field-row">
-        <label>Archiv / Fundstelle<input class="source-input" id="src-archive" value="${escHtml(sourceSettings.archive)}" placeholder="z.B. Archivverbund Bautzen, Stadtarchiv, 62564-200" /></label>
-      </div>
-      <div class="source-field-row">
-        <label>Bearbeiter<input class="source-input" id="src-editor" value="${escHtml(sourceSettings.editor)}" placeholder="z.B. Matthes, Fiebiger" /></label>
-      </div>
-      <div class="source-field-row">
-        <label>Seitenzahl aus Spalte
-          ${colSelect('src-citation-col', sourceSettings.citationColIdx)}
-        </label>
-      </div>
-    `;
-    detail.querySelector('#src-title').addEventListener('input', e => { sourceSettings.title = e.target.value; });
-    detail.querySelector('#src-archive').addEventListener('input', e => { sourceSettings.archive = e.target.value; });
-    detail.querySelector('#src-editor').addEventListener('input', e => { sourceSettings.editor = e.target.value; });
-    detail.querySelector('#src-citation-col').addEventListener('change', e => {
-      sourceSettings.citationColIdx = e.target.value === '' ? null : parseInt(e.target.value);
-    });
-
-  } else if (sourceSettings.mode === 'sheet') {
-    const sheetOptions = parsedFile ? parsedFile.sheetNames.map(n =>
-      `<option value="${escHtml(n)}" ${sourceSettings.sheetName === n ? 'selected' : ''}>${escHtml(n)}</option>`
-    ).join('') : '';
-    detail.innerHTML = `
-      <div class="source-field-row">
-        <label>Tabellenblatt mit Quelldaten
-          <select class="source-input" id="src-sheet"><option value="">-- bitte wählen --</option>${sheetOptions}</select>
-        </label>
-      </div>
-      <p class="source-hint">Das Blatt muss die Felder „Quelle:" und „Bearbeiter:" enthalten.</p>
-    `;
-    detail.querySelector('#src-sheet').addEventListener('change', e => { sourceSettings.sheetName = e.target.value; });
-
-  } else if (sourceSettings.mode === 'column') {
-    detail.innerHTML = `
-      <div class="source-field-row">
-        <label>Quell-Titel aus Spalte ${colSelect('src-title-col', sourceSettings.titleColIdx)}</label>
-      </div>
-      <div class="source-field-row">
-        <label>Seitenzahl aus Spalte ${colSelect('src-citation-col2', sourceSettings.citationColIdx)}</label>
-      </div>
-    `;
-    detail.querySelector('#src-title-col').addEventListener('change', e => {
-      sourceSettings.titleColIdx = e.target.value === '' ? null : parseInt(e.target.value);
-    });
-    detail.querySelector('#src-citation-col2').addEventListener('change', e => {
-      sourceSettings.citationColIdx = e.target.value === '' ? null : parseInt(e.target.value);
-    });
-
-  } else if (sourceSettings.mode === 'existing') {
-    detail.innerHTML = `
-      <div class="source-field-row">
-        <label>GEDCOM Quell-ID<input class="source-input" id="src-existing-id" value="${escHtml(sourceSettings.existingId)}" placeholder="z.B. @S1@" /></label>
-      </div>
-      <p class="source-hint">Die Quelle muss bereits in der Ziel-GEDCOM-Datei vorhanden sein.</p>
-    `;
-    detail.querySelector('#src-existing-id').addEventListener('input', e => { sourceSettings.existingId = e.target.value; });
-  }
-
-  container.appendChild(detail);
-}
-
-function colSelect(id, selectedIdx) {
-  const opts = ['<option value="">-- keine --</option>'];
-  headers.forEach((h, i) => {
-    if (ignoredColumns.has(i)) return;
-    opts.push(`<option value="${i}" ${selectedIdx === i ? 'selected' : ''}>${escHtml(h)}</option>`);
-  });
-  return `<select class="source-input source-col-sel" id="${id}">${opts.join('')}</select>`;
-}
 
 // ---- Person list (right side) ----
 function renderPersonList() {
@@ -374,9 +270,9 @@ function renderPersonList() {
     const cardHeader = document.createElement('div');
     cardHeader.className = 'person-card-header';
     cardHeader.innerHTML = `
-      <span class="person-icon">👤</span>
+      <span class="person-icon">ðŸ‘¤</span>
       <input class="person-label-input" value="${escHtml(person.label)}" placeholder="Personenbezeichnung" />
-      <button class="btn-icon btn-remove-person" title="Person entfernen" data-pid="${person.id}">✕</button>
+      <button class="btn-icon btn-remove-person" title="Person entfernen" data-pid="${person.id}">âœ•</button>
     `;
     cardHeader.querySelector('.person-label-input').addEventListener('input', e => {
       person.label = e.target.value;
@@ -401,7 +297,7 @@ function renderPersonList() {
     fieldsSection.className = 'fields-section';
     fieldsSection.innerHTML = '<div class="fields-section-title">Personenfelder</div>';
     person.fields.forEach(field => fieldsSection.appendChild(renderField(field, person, null)));
-    const addFieldBtn = createAddButton('+ Feld hinzufügen', GEDCOM_PERSON_FIELDS, (path) => {
+    const addFieldBtn = createAddButton('+ Feld hinzufÃ¼gen', GEDCOM_PERSON_FIELDS, (path) => {
       addPersonField(person, path); renderPersonList(); renderPreview();
     });
     fieldsSection.appendChild(addFieldBtn);
@@ -412,13 +308,13 @@ function renderPersonList() {
     evSection.className = 'fields-section';
     evSection.innerHTML = '<div class="fields-section-title">Ereignisse</div>';
     person.events.forEach(ev => evSection.appendChild(renderEvent(ev, person)));
-    const addEvBtn = createAddButton('+ Ereignis hinzufügen', GEDCOM_EVENT_TYPES.map(e => ({path: e.tag, label: e.label})), (tag) => {
+    const addEvBtn = createAddButton('+ Ereignis hinzufÃ¼gen', GEDCOM_EVENT_TYPES.map(e => ({path: e.tag, label: e.label})), (tag) => {
       addEvent(person, tag); renderPersonList(); renderPreview();
     });
     evSection.appendChild(addEvBtn);
     card.appendChild(evSection);
 
-    // Relatives section — links to other persons in this mapping
+    // Relatives section â€” links to other persons in this mapping
     const relSection = document.createElement('div');
     relSection.className = 'fields-section';
     relSection.innerHTML = '<div class="fields-section-title">Beziehungen zu anderen Personen</div>';
@@ -428,7 +324,7 @@ function renderPersonList() {
     if (otherPersons.length === 0) {
       const hint = document.createElement('p');
       hint.className = 'rel-hint';
-      hint.textContent = 'Fügen Sie eine weitere Person hinzu, um Beziehungen definieren zu können.';
+      hint.textContent = 'FÃ¼gen Sie eine weitere Person hinzu, um Beziehungen definieren zu kÃ¶nnen.';
       relSection.appendChild(hint);
     } else {
       const relList = document.createElement('div');
@@ -447,7 +343,7 @@ function renderPersonList() {
           <select class="rel-role-sel">${roleOptions}</select>
           <span class="rel-desc">von</span>
           <select class="rel-person-sel">${personOptions}</select>
-          <button class="btn-icon" title="Beziehung entfernen">✕</button>
+          <button class="btn-icon" title="Beziehung entfernen">âœ•</button>
         `;
         relItem.querySelector('.rel-role-sel').addEventListener('change', e => { rel.role = e.target.value; renderPreview(); });
         relItem.querySelector('.rel-person-sel').addEventListener('change', e => { rel.targetPersonId = e.target.value; renderPreview(); });
@@ -461,7 +357,7 @@ function renderPersonList() {
 
       const addRelBtn = document.createElement('button');
       addRelBtn.className = 'btn-secondary btn-small';
-      addRelBtn.textContent = '+ Beziehung hinzufügen';
+      addRelBtn.textContent = '+ Beziehung hinzufÃ¼gen';
       addRelBtn.addEventListener('click', () => {
         person.relatives.push({ id: newId(), role: 'Vater', targetPersonId: otherPersons[0].id });
         renderPersonList(); renderPreview();
@@ -473,7 +369,7 @@ function renderPersonList() {
     // ---- Person citations block ----
     const personCitBlock = document.createElement('div');
     personCitBlock.className = 'fields-section person-citations-block';
-    personCitBlock.innerHTML = '<div class="fields-section-title">📚 Quellenzitation zur Person</div>';
+    personCitBlock.innerHTML = '<div class="fields-section-title">ðŸ“š Quellenzitation zur Person</div>';
 
     // Drop zone: drag a source chip onto the person card header area
     personCitBlock.addEventListener('dragover', e => { e.preventDefault(); personCitBlock.classList.add('drag-over-event'); });
@@ -511,7 +407,7 @@ function renderPersonList() {
     if (autoPersonCits.length === 0 && person.citations.length === 0) {
       const hint = document.createElement('div');
       hint.className = 'event-drop-source-hint';
-      hint.textContent = '📚 Quelle aus linker Palette hierher ziehen';
+      hint.textContent = 'ðŸ“š Quelle aus linker Palette hierher ziehen';
       personCitBlock.appendChild(hint);
     }
 
@@ -558,7 +454,7 @@ function renderField(field, person, ev) {
     if (!dragSourceData) return;
     let src = { ...dragSourceData };
     if (src.type === 'static') {
-      const val = prompt('Festen Wert eingeben (gilt für alle Zeilen):');
+      const val = prompt('Festen Wert eingeben (gilt fÃ¼r alle Zeilen):');
       if (val === null) return;
       src.value = val;
       src.label = val || '(leer)';
@@ -589,7 +485,7 @@ function renderField(field, person, ev) {
   const rmBtn = document.createElement('button');
   rmBtn.className = 'btn-icon field-remove';
   rmBtn.title = 'Feld entfernen';
-  rmBtn.textContent = '✕';
+  rmBtn.textContent = 'âœ•';
   rmBtn.addEventListener('click', () => {
     if (ev) ev.fields = ev.fields.filter(f => f.id !== field.id);
     else person.fields = person.fields.filter(f => f.id !== field.id);
@@ -607,11 +503,11 @@ function renderSourceChip(src, field) {
   if (src.type === 'static') chip.classList.add('source-static');
   if (src.type === 'var') chip.classList.add('source-var');
 
-  const icon = src.type === 'col' ? '📋' : src.type === 'var' ? '🔖' : '✏️';
+  const icon = src.type === 'col' ? 'ðŸ“‹' : src.type === 'var' ? 'ðŸ”–' : 'âœï¸';
   const label = src.type === 'col' ? (headers[src.colIdx] || `Sp.${src.colIdx}`) :
                 src.type === 'var' ? src.varName : `"${src.value}"`;
 
-  chip.innerHTML = `${icon} ${escHtml(label)} <button class="chip-remove" title="Entfernen">×</button>`;
+  chip.innerHTML = `${icon} ${escHtml(label)} <button class="chip-remove" title="Entfernen">Ã—</button>`;
   chip.querySelector('.chip-remove').addEventListener('click', (e) => {
     e.stopPropagation();
     removeSourceFromField(field, src.id);
@@ -644,7 +540,7 @@ function renderEvent(ev, person) {
   header.innerHTML = `
     <span class="event-tag">${escHtml(ev.tag)}</span>
     <span class="event-label">${escHtml(ev.label)}</span>
-    <button class="btn-icon btn-remove-event" title="Ereignis entfernen">✕</button>
+    <button class="btn-icon btn-remove-event" title="Ereignis entfernen">âœ•</button>
   `;
   header.querySelector('.btn-remove-event').addEventListener('click', () => {
     person.events = person.events.filter(e => e.id !== ev.id);
@@ -679,7 +575,7 @@ function renderEvent(ev, person) {
   if (autoCits.length > 0 || manualCits.length > 0) {
     const citTitle = document.createElement('div');
     citTitle.className = 'event-citations-title';
-    citTitle.textContent = '📚 Zitationen';
+    citTitle.textContent = 'ðŸ“š Zitationen';
     citBlock.appendChild(citTitle);
   }
 
@@ -696,7 +592,7 @@ function renderEvent(ev, person) {
   if (autoCits.length === 0 && manualCits.length === 0) {
     const dropHint = document.createElement('div');
     dropHint.className = 'event-drop-source-hint';
-    dropHint.textContent = '📚 Quelle aus linker Palette hierher ziehen';
+    dropHint.textContent = 'ðŸ“š Quelle aus linker Palette hierher ziehen';
     citBlock.appendChild(dropHint);
   }
 
@@ -710,14 +606,14 @@ function renderCitationRow(src, ev, manualCit, isAuto) {
   row.className = 'citation-row' + (isAuto ? ' citation-auto' : ' citation-manual');
 
   const badge = isAuto
-    ? `<span class="cit-badge cit-auto" title="Wird automatisch angehängt (Quelleneinstellungen)">auto</span>`
-    : `<span class="cit-badge cit-manual" title="Manuell hinzugefügt">manuell</span>`;
+    ? `<span class="cit-badge cit-auto" title="Wird automatisch angehÃ¤ngt (Quelleneinstellungen)">auto</span>`
+    : `<span class="cit-badge cit-manual" title="Manuell hinzugefÃ¼gt">manuell</span>`;
 
   row.innerHTML = `
     <div class="cit-header">
       ${badge}
-      <span class="cit-name">📚 ${escHtml(src.name)}</span>
-      ${!isAuto ? `<button class="btn-icon cit-remove" title="Zitation entfernen">✕</button>` : ''}
+      <span class="cit-name">ðŸ“š ${escHtml(src.name)}</span>
+      ${!isAuto ? `<button class="btn-icon cit-remove" title="Zitation entfernen">âœ•</button>` : ''}
     </div>
   `;
 
@@ -738,7 +634,7 @@ function renderCitationRow(src, ev, manualCit, isAuto) {
     if (!v && !manualCit?.overrides?.[f.tag]) return;
     const fRow = document.createElement('div');
     fRow.className = 'cit-field-row';
-    fRow.innerHTML = `<span class="cit-field-tag">${escHtml(f.tag)}</span><span class="cit-field-val">${escHtml(v || '–')}</span>`;
+    fRow.innerHTML = `<span class="cit-field-tag">${escHtml(f.tag)}</span><span class="cit-field-val">${escHtml(v || 'â€“')}</span>`;
     fieldsList.appendChild(fRow);
   });
   row.appendChild(fieldsList);
@@ -746,7 +642,7 @@ function renderCitationRow(src, ev, manualCit, isAuto) {
   return row;
 }
 
-// ---- Generic "add" dropdown button (portal — rendered in body) ----
+// ---- Generic "add" dropdown button (portal â€” rendered in body) ----
 let activeDropdown = null;
 
 function closeActiveDropdown() {
@@ -834,7 +730,7 @@ function renderPreview() {
       givn ? previewFieldValue(givn, dataRow, gvars) : '',
       surn ? previewFieldValue(surn, dataRow, gvars) : ''
     ].filter(Boolean).join(' ') || person.label;
-    title.textContent = '👤 ' + nameStr;
+    title.textContent = 'ðŸ‘¤ ' + nameStr;
     section.appendChild(title);
 
     // Person fields
@@ -852,7 +748,7 @@ function renderPreview() {
       const evBlock = document.createElement('div');
       evBlock.className = 'preview-event';
       const evLabel = ev.tag === 'EVEN' && ev.customType ? ev.customType : ev.label;
-      evBlock.innerHTML = `<div class="preview-event-title">📅 ${escHtml(evLabel)}</div>`;
+      evBlock.innerHTML = `<div class="preview-event-title">ðŸ“… ${escHtml(evLabel)}</div>`;
       ev.fields.forEach(field => {
         const pv = previewFieldValue(field, dataRow, gvars);
         if (!pv) return;
@@ -868,7 +764,7 @@ function renderPreview() {
     if (person.relatives.length > 0) {
       const relBlock = document.createElement('div');
       relBlock.className = 'preview-event';
-      relBlock.innerHTML = '<div class="preview-event-title">👪 Verwandte</div>';
+      relBlock.innerHTML = '<div class="preview-event-title">ðŸ‘ª Verwandte</div>';
       person.relatives.forEach(rel => {
         const row = document.createElement('div');
         row.className = 'preview-row';
