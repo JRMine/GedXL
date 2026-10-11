@@ -82,7 +82,8 @@ function collectCitations(manualCitations, attachFilter, dataRow, gvars) {
 }
 
 // ---- Generate GEDCOM for all DATA rows ----
-function generateGEDCOM() {
+function generateGEDCOM(headConfig) {
+  headConfig = headConfig || {};
   const gvars = collectGlobalVars();
   const dataRows = currentRows.map((row, i) => ({ row, i })).filter(({ i }) => classifications[i]?.type === 'DATA');
   const FAM_ROLES = ['Vater','Mutter','Kind','Partner','Geschwister'];
@@ -102,11 +103,17 @@ function generateGEDCOM() {
   lines.push('1 SOUR GedXL');
   lines.push('2 VERS 1.0');
   lines.push('2 NAME GedXL Excel/CSV zu GEDCOM Konverter');
+  if (headConfig.fileDesc) lines.push('1 FILE ' + headConfig.fileDesc);
   lines.push('1 GEDC');
-  lines.push('2 VERS 5.5.1');
+  lines.push('2 VERS ' + (headConfig.gedcomVer || '5.5.1'));
   lines.push('2 FORM LINEAGE-LINKED');
   lines.push('1 CHAR UTF-8');
+  if (headConfig.lang) lines.push('1 LANG ' + headConfig.lang);
   lines.push('1 DATE ' + gedcomToday());
+  if (headConfig.submitter) {
+    lines.push('1 SUBM @SUBM1@');
+  }
+  if (headConfig.note) lines.push('1 NOTE ' + headConfig.note);
   lines.push('');
 
   // ---- SOUR records (new sources only) ----
@@ -231,6 +238,13 @@ function generateGEDCOM() {
       // (will be post-processed — GEDCOM validators tolerate missing back-refs)
     });
   });
+
+  // ---- SUBM record (if submitter given) ----
+  if (headConfig.submitter) {
+    lines.push('0 @SUBM1@ SUBM');
+    lines.push('1 NAME ' + headConfig.submitter);
+    lines.push('');
+  }
 
   // ---- TRLR ----
   lines.push('0 TRLR');

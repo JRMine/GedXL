@@ -918,3 +918,20 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   font-size: 11px; line-height: 1.5; padding: 16px; border-radius: 8px;
   max-height: 500px; overflow-y: auto; white-space: pre; tab-size: 2;
 }
+
+/* ---- Export HEAD editor ---- */
+.export-head-section { background: #f8f9fa; border: 1px solid #e0e4eb; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.export-section-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin: 0 0 14px 0; }
+.export-head-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.export-head-row { display: flex; align-items: center; gap: 12px; }
+.export-head-label { font-size: 12px; font-weight: 600; color: #555; width: 260px; flex-shrink: 0; }
+.export-head-input, .export-head-select {
+  flex: 1; border: 1px solid #dde1ea; border-radius: 6px;
+  padding: 6px 10px; font-size: 12px;
+}
+.export-head-preview-title { font-size: 11px; font-weight: 700; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.export-head-preview {
+  background: #1a1a2e; color: #a8d8ea; font-family: 'Courier New', monospace;
+  font-size: 11px; line-height: 1.6; padding: 12px; border-radius: 6px;
+  white-space: pre; margin: 0;
+}
