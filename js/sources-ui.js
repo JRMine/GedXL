@@ -1,83 +1,108 @@
 /**
- * sources-ui.js - Quelleneinstellungen UI mit Chip/Drag&Drop
+ * sources-ui.js - Quelleneinstellungen UI (Mapping-identisches Layout)
  */
 
 let sourceDragData = null;
+let sourcesLeft, sourcesCols, sourcesRight, sourcesPreviewCard, sourcesPreviewRowSelect;
 
 function initSources() {
   sourceDefs = [];
+  sourcesLeft           = document.getElementById('sources-left');
+  sourcesCols           = document.getElementById('sources-cols');
+  sourcesRight          = document.getElementById('sources-right');
+  sourcesPreviewCard    = document.getElementById('sources-preview-card');
+  sourcesPreviewRowSelect = document.getElementById('sources-preview-row-select');
+
+  document.getElementById('btn-add-source').onclick = () => {
+    const src = createSourceDef();
+    src.name = 'Quelle ' + (sourceDefs.length + 1);
+    sourceDefs.push(src);
+    renderAllSources();
+    renderSourcesPreview();
+  };
+
+  populateSourcesPreviewRowSelect();
   renderAllSources();
-  const addBtn = document.getElementById('btn-add-source');
-  if (addBtn) {
-    addBtn.onclick = () => {
-      const src = createSourceDef();
-      src.name = 'Quelle ' + (sourceDefs.length + 1);
-      sourceDefs.push(src);
-      renderAllSources();
-    };
-  }
 }
 
+function populateSourcesPreviewRowSelect() {
+  if (!sourcesPreviewRowSelect) return;
+  sourcesPreviewRowSelect.innerHTML = '';
+  classifications.forEach((cls, i) => {
+    if (cls.type !== 'DATA') return;
+    const row = currentRows[i];
+    const opt = document.createElement('option');
+    opt.value = i;
+    const preview = row.filter(c => c !== null && c !== undefined && String(c).trim() !== '').slice(0, 2).join(', ');
+    opt.textContent = 'Zeile ' + (i + 1) + ': ' + (preview || '(leer)');
+    sourcesPreviewRowSelect.appendChild(opt);
+  });
+  sourcesPreviewRowSelect.addEventListener('change', renderSourcesPreview);
+}
+
+function getSourcesPreviewRow() {
+  const idx = sourcesPreviewRowSelect ? parseInt(sourcesPreviewRowSelect.value) : -1;
+  if (idx >= 0 && currentRows[idx]) return currentRows[idx];
+  return getFirstDataRow();
+}
+
+// ---- Render alle Spalten + Quellen ----
 function renderAllSources() {
-  const container = document.getElementById('sources-container');
-  if (!container) return;
-  container.innerHTML = '';
-
-  // Chip-Palette oben
-  container.appendChild(buildSourcePalette());
-
-  if (sourceDefs.length === 0) {
-    const hint = document.createElement('p');
-    hint.className = 'empty-hint';
-    hint.textContent = 'Noch keine Quellen definiert. Klicken Sie auf "+ Quelle hinzufuegen".';
-    container.appendChild(hint);
-    return;
-  }
-  sourceDefs.forEach(src => container.appendChild(renderSourceDef(src)));
+  renderSourcePalette();
+  renderSourceList();
+  renderSourcesPreview();
 }
 
-// ---- Chip-Palette (Spalten + Variablen + Fester Wert) ----
-function buildSourcePalette() {
-  const palette = document.createElement('div');
-  palette.className = 'source-palette';
+// ---- Spalten-Palette (Col 1 + Col 2) ----
+function renderSourcePalette() {
+  if (!sourcesLeft || !sourcesCols) return;
+  sourcesLeft.innerHTML = '';
+  sourcesCols.innerHTML = '';
 
-  // Spalten
-  if (headers && headers.length > 0) {
-    const title = document.createElement('div');
-    title.className = 'palette-section-title';
-    title.textContent = 'Tabellenspalten';
-    palette.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'chip-grid';
-    headers.forEach((colName, colIdx) => {
-      if (ignoredColumns && ignoredColumns.has(colIdx)) return;
-      const chip = document.createElement('div');
-      chip.className = 'col-chip';
-      chip.draggable = true;
-      const example = getSourceColExample(colIdx);
-      chip.innerHTML = '<span class="chip-name">' + escHtml(colName) + '</span>' +
-        (example ? '<span class="chip-val">' + escHtml(example) + '</span>' : '');
-      chip.addEventListener('dragstart', e => {
-        sourceDragData = { type: 'col', colIdx, label: colName };
-        chip.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'copy';
-      });
-      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-      grid.appendChild(chip);
+  // Col 2: Tabellenspalten
+  const colsTitle = document.createElement('h3');
+  colsTitle.className = 'palette-title';
+  colsTitle.textContent = 'Verfuegbare Spalten';
+  sourcesCols.appendChild(colsTitle);
+  const colsHint = document.createElement('p');
+  colsHint.className = 'palette-hint';
+  colsHint.textContent = 'Per Drag & Drop auf ein Feld ziehen.';
+  sourcesCols.appendChild(colsHint);
+  const colGrid = document.createElement('div');
+  colGrid.className = 'chip-grid';
+  headers.forEach((colName, colIdx) => {
+    if (ignoredColumns && ignoredColumns.has(colIdx)) return;
+    const chip = document.createElement('div');
+    chip.className = 'col-chip';
+    chip.draggable = true;
+    const example = getSourceColExample(colIdx);
+    chip.innerHTML = '<span class="chip-name">' + escHtml(colName) + '</span>' +
+      (example ? '<span class="chip-val">' + escHtml(example) + '</span>' : '');
+    chip.addEventListener('dragstart', e => {
+      sourceDragData = { type: 'col', colIdx, label: colName };
+      chip.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'copy';
     });
-    palette.appendChild(grid);
-  }
+    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+    colGrid.appendChild(chip);
+  });
+  sourcesCols.appendChild(colGrid);
 
-  // Globale Variablen
+  // Col 1: Extras
+  const leftTitle = document.createElement('h3');
+  leftTitle.className = 'palette-title';
+  leftTitle.textContent = 'Extras';
+  sourcesLeft.appendChild(leftTitle);
+
   const gvars = (typeof collectGlobalVars === 'function') ? collectGlobalVars() : {};
   const varNames = Object.keys(gvars);
   if (varNames.length > 0) {
-    const title = document.createElement('div');
-    title.className = 'palette-section-title';
-    title.textContent = 'Globale Variablen';
-    palette.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'chip-grid';
+    const gTitle = document.createElement('div');
+    gTitle.className = 'palette-section-title';
+    gTitle.textContent = 'Globale Variablen';
+    sourcesLeft.appendChild(gTitle);
+    const gGrid = document.createElement('div');
+    gGrid.className = 'chip-grid-single';
     varNames.forEach(varName => {
       const chip = document.createElement('div');
       chip.className = 'col-chip var-chip';
@@ -89,16 +114,15 @@ function buildSourcePalette() {
         e.dataTransfer.effectAllowed = 'copy';
       });
       chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-      grid.appendChild(chip);
+      gGrid.appendChild(chip);
     });
-    palette.appendChild(grid);
+    sourcesLeft.appendChild(gGrid);
   }
 
-  // Fester Wert
   const staticTitle = document.createElement('div');
   staticTitle.className = 'palette-section-title';
   staticTitle.textContent = 'Manuelle Eingabe';
-  palette.appendChild(staticTitle);
+  sourcesLeft.appendChild(staticTitle);
   const staticChip = document.createElement('div');
   staticChip.className = 'col-chip static-chip';
   staticChip.draggable = true;
@@ -109,9 +133,7 @@ function buildSourcePalette() {
     e.dataTransfer.effectAllowed = 'copy';
   });
   staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
-  palette.appendChild(staticChip);
-
-  return palette;
+  sourcesLeft.appendChild(staticChip);
 }
 
 function getSourceColExample(colIdx) {
@@ -120,26 +142,43 @@ function getSourceColExample(colIdx) {
   return v !== null && v !== undefined && String(v).trim() !== '' ? String(v).trim() : null;
 }
 
-// ---- Render one source definition ----
+// ---- Quellen-Liste (Col 3) ----
+function renderSourceList() {
+  if (!sourcesRight) return;
+  sourcesRight.innerHTML = '';
+  if (sourceDefs.length === 0) {
+    const hint = document.createElement('p');
+    hint.className = 'empty-hint';
+    hint.style.padding = '20px';
+    hint.textContent = 'Noch keine Quellen. Klicken Sie auf "+ Weitere Quelle hinzufuegen".';
+    sourcesRight.appendChild(hint);
+    return;
+  }
+  sourceDefs.forEach(src => sourcesRight.appendChild(renderSourceDef(src)));
+}
+
+// ---- Eine Quellen-Karte ----
 function renderSourceDef(src) {
   const card = document.createElement('div');
-  card.className = 'source-card';
+  card.className = 'person-card';
 
   // Header
   const header = document.createElement('div');
-  header.className = 'source-card-header';
+  header.className = 'person-card-header';
   header.innerHTML =
-    '<span class="source-icon">&#128196;</span>' +
-    '<input class="source-name-input" value="' + escHtml(src.name) + '" placeholder="Quellenbezeichnung" />' +
-    '<button class="btn-icon btn-remove-source" title="Quelle entfernen">&#10005;</button>';
-  header.querySelector('.source-name-input').addEventListener('input', e => { src.name = e.target.value; });
-  header.querySelector('.btn-remove-source').addEventListener('click', () => {
+    '<span class="person-icon">&#128196;</span>' +
+    '<input class="person-label-input" value="' + escHtml(src.name) + '" placeholder="Quellenbezeichnung" />' +
+    '<button class="btn-icon btn-remove-person" title="Quelle entfernen">&#10005;</button>';
+  header.querySelector('.person-label-input').addEventListener('input', e => { src.name = e.target.value; renderSourcesPreview(); });
+  header.querySelector('.btn-remove-person').addEventListener('click', () => {
     sourceDefs = sourceDefs.filter(s => s.id !== src.id);
     renderAllSources();
   });
   card.appendChild(header);
 
   // Mode toggle
+  const modeSection = document.createElement('div');
+  modeSection.className = 'fields-section';
   const modeRow = document.createElement('div');
   modeRow.className = 'source-mode-row';
   SOURCE_MODES.forEach(m => {
@@ -150,44 +189,49 @@ function renderSourceDef(src) {
     btn.addEventListener('click', () => { src.mode = m.value; renderAllSources(); });
     modeRow.appendChild(btn);
   });
-  card.appendChild(modeRow);
+  modeSection.appendChild(modeRow);
+  card.appendChild(modeSection);
 
   if (src.mode === 'existing') {
+    const idSection = document.createElement('div');
+    idSection.className = 'fields-section';
+    idSection.innerHTML = '<div class="fields-section-title">GEDCOM-ID</div>';
     const idRow = document.createElement('div');
-    idRow.className = 'source-existing-row';
-    idRow.innerHTML = '<label>GEDCOM-ID: <input class="source-existing-input" value="' + escHtml(src.existingId) + '" placeholder="z.B. @S1@" /></label>';
-    idRow.querySelector('input').addEventListener('input', e => { src.existingId = e.target.value; });
-    card.appendChild(idRow);
+    idRow.innerHTML = '<label style="font-size:12px">ID: <input class="source-existing-input" value="' + escHtml(src.existingId) + '" placeholder="z.B. @S1@" /></label>';
+    idRow.querySelector('input').addEventListener('input', e => { src.existingId = e.target.value; renderSourcesPreview(); });
+    idSection.appendChild(idRow);
+    card.appendChild(idSection);
   } else {
-    // Source fields
     const sfSection = document.createElement('div');
-    sfSection.className = 'source-fields-section';
-    sfSection.innerHTML = '<div class="source-fields-title">Quellenfelder <span class="source-fields-hint">(werden im SOUR-Record gespeichert, gleich fuer alle Zeilen)</span></div>';
+    sfSection.className = 'fields-section';
+    sfSection.innerHTML = '<div class="fields-section-title">Quellenfelder <span style="font-size:10px;color:#aaa;font-weight:400">(SOUR-Record, einmalig)</span></div>';
     src.sourceFields.forEach(field => sfSection.appendChild(renderSourceChipField(field, src)));
-    sfSection.appendChild(buildAddFieldBtn(AVAILABLE_SOURCE_FIELDS, tag => {
+    sfSection.appendChild(createAddButton('+ Feld', AVAILABLE_SOURCE_FIELDS.map(f => ({ path: f.tag, label: f.label })), tag => {
       const def = AVAILABLE_SOURCE_FIELDS.find(f => f.tag === tag);
       src.sourceFields.push(createSourceFieldDef(tag, def ? def.label : tag));
       renderAllSources();
-    }));
+    }, true));
     card.appendChild(sfSection);
   }
 
   // Citation fields
   const cfSection = document.createElement('div');
-  cfSection.className = 'source-fields-section';
-  cfSection.innerHTML = '<div class="source-fields-title">Zitationsfelder <span class="source-fields-hint">(pro Datensatz unterschiedlich)</span></div>';
+  cfSection.className = 'fields-section';
+  cfSection.innerHTML = '<div class="fields-section-title">Zitationsfelder <span style="font-size:10px;color:#aaa;font-weight:400">(pro Datensatz)</span></div>';
   src.citationFields.forEach(field => cfSection.appendChild(renderSourceChipField(field, src)));
-  cfSection.appendChild(buildAddFieldBtn(AVAILABLE_CITATION_FIELDS, tag => {
+  cfSection.appendChild(createAddButton('+ Feld', AVAILABLE_CITATION_FIELDS.map(f => ({ path: f.tag, label: f.label })), tag => {
     const def = AVAILABLE_CITATION_FIELDS.find(f => f.tag === tag);
     src.citationFields.push(createSourceFieldDef(tag, def ? def.label : tag));
     renderAllSources();
-  }));
+  }, true));
   card.appendChild(cfSection);
 
-  // attachTo checkboxes
+  // attachTo
+  const attachSection = document.createElement('div');
+  attachSection.className = 'fields-section';
+  attachSection.innerHTML = '<div class="fields-section-title">Automatisch zitieren bei</div>';
   const attachRow = document.createElement('div');
   attachRow.className = 'source-attach-row';
-  attachRow.innerHTML = '<span class="attach-label">Automatisch zitieren bei:</span>';
   [['person', 'Person'], ['events', 'Ereignissen']].forEach(([key, label]) => {
     const lbl = document.createElement('label');
     lbl.className = 'attach-checkbox';
@@ -199,7 +243,8 @@ function renderSourceDef(src) {
     lbl.appendChild(document.createTextNode(' ' + label));
     attachRow.appendChild(lbl);
   });
-  card.appendChild(attachRow);
+  attachSection.appendChild(attachRow);
+  card.appendChild(attachSection);
 
   return card;
 }
@@ -207,17 +252,16 @@ function renderSourceDef(src) {
 // ---- Chip-Drop-Zone fuer ein Quellenfeld ----
 function renderSourceChipField(field, src) {
   const row = document.createElement('div');
-  row.className = 'source-chip-field-row';
+  row.className = 'field-row';
 
   const label = document.createElement('div');
-  label.className = 'source-chip-field-label';
-  label.innerHTML = escHtml(field.label) + ' <span class="source-field-tag">' + escHtml(field.tag) + '</span>';
+  label.className = 'field-label';
+  label.textContent = field.label;
   row.appendChild(label);
 
   const zone = document.createElement('div');
   zone.className = 'field-drop-zone' + (field.sources.length === 0 ? ' empty' : '');
-  field.sources.forEach(s => zone.appendChild(renderSrcChip(s, field, src)));
-
+  field.sources.forEach(s => zone.appendChild(renderSrcChip(s, field)));
   zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
   zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
   zone.addEventListener('drop', e => {
@@ -242,13 +286,13 @@ function renderSourceChipField(field, src) {
   }
   row.appendChild(zone);
 
-  // Preview
+  // Preview value
   const preview = document.createElement('div');
   preview.className = 'field-preview-val';
-  preview.textContent = previewSourceField(field, getFirstDataRow()) || '';
+  preview.textContent = previewSourceField(field, getSourcesPreviewRow()) || '';
   row.appendChild(preview);
 
-  // Remove field button
+  // Remove field
   const rmBtn = document.createElement('button');
   rmBtn.className = 'btn-icon field-remove';
   rmBtn.title = 'Feld entfernen';
@@ -263,7 +307,7 @@ function renderSourceChipField(field, src) {
   return row;
 }
 
-function renderSrcChip(s, field, src) {
+function renderSrcChip(s, field) {
   const chip = document.createElement('div');
   chip.className = 'source-chip' + (s.type === 'static' ? ' source-static' : s.type === 'var' ? ' source-var' : '');
   const label = s.type === 'col' ? (headers[s.colIdx] || 'Sp.' + s.colIdx) :
@@ -277,8 +321,53 @@ function renderSrcChip(s, field, src) {
   return chip;
 }
 
-function buildAddFieldBtn(options, onSelect) {
-  return createAddButton('+ Feld hinzufuegen', options.map(o => ({ path: o.tag, label: o.label })), onSelect);
+// ---- Vorschau-Karte (Col 4) ----
+function renderSourcesPreview() {
+  if (!sourcesPreviewCard) return;
+  const dataRow = getSourcesPreviewRow();
+  sourcesPreviewCard.innerHTML = '<div class="preview-title">GEDCOM-Vorschau</div>';
+  if (sourceDefs.length === 0) {
+    sourcesPreviewCard.innerHTML += '<p class="empty-hint">Keine Quellen definiert.</p>';
+    return;
+  }
+  sourceDefs.forEach(src => {
+    const block = document.createElement('div');
+    block.className = 'preview-person';
+    const title = document.createElement('div');
+    title.className = 'preview-person-title';
+    title.textContent = src.name;
+    block.appendChild(title);
+    if (src.mode === 'existing') {
+      const r = document.createElement('div');
+      r.className = 'preview-row';
+      r.innerHTML = '<span class="preview-key">ID</span><span class="preview-val">' + escHtml(src.existingId || '?') + '</span>';
+      block.appendChild(r);
+    } else {
+      src.sourceFields.forEach(f => {
+        const v = previewSourceField(f, dataRow);
+        if (!v) return;
+        const r = document.createElement('div');
+        r.className = 'preview-row';
+        r.innerHTML = '<span class="preview-key">' + escHtml(f.tag) + '</span><span class="preview-val">' + escHtml(v) + '</span>';
+        block.appendChild(r);
+      });
+    }
+    if (src.citationFields.some(f => previewSourceField(f, dataRow))) {
+      const citTitle = document.createElement('div');
+      citTitle.className = 'preview-event-title';
+      citTitle.textContent = 'Zitation';
+      block.appendChild(citTitle);
+      src.citationFields.forEach(f => {
+        const v = previewSourceField(f, dataRow);
+        if (!v) return;
+        const r = document.createElement('div');
+        r.className = 'preview-row';
+        r.innerHTML = '<span class="preview-key">' + escHtml(f.tag) + '</span><span class="preview-val">' + escHtml(v) + '</span>';
+        block.appendChild(r);
+      });
+    }
+    sourcesPreviewCard.appendChild(block);
+  });
 }
 
-function updateSourcePreview() {} // Kompatibilitaets-Stub
+function updateSourcePreview() { renderSourcesPreview(); } // Kompatibilitaets-Stub

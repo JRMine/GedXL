@@ -135,19 +135,36 @@
 
     <!-- STEP 3: Quelleneinstellungen -->
     <section id="step-sources" class="step hidden">
-      <h2 class="step-title"><span class="step-num">3</span> Quelleneinstellungen</h2>
-      <p class="section-desc">
-        Definieren Sie hier die Quelle(n) fuer Ihre Daten. Jede Quelle besteht aus einem <strong>Quell-Objekt</strong>
-        (einmalig in der GEDCOM) und einer <strong>Zitation</strong> (individuell je Datensatz, z.B. Seitenzahl).
-        Felder koennen entweder als fester Wert oder aus einer Tabellenspalte befuellt werden.
-      </p>
+      <div class="mapping-toolbar">
+        <h2 class="step-title" style="margin:0"><span class="step-num">3</span> Quelleneinstellungen</h2>
+        <div class="mapping-toolbar-right">
+          <label class="preview-row-label">Vorschau-Zeile:
+            <select id="sources-preview-row-select" class="preview-row-sel"></select>
+          </label>
+          <button id="btn-sources-next" class="btn-primary">Weiter zum Mapping</button>
+        </div>
+      </div>
 
-      <div id="sources-container" class="sources-container"></div>
+      <div class="mapping-layout sources-layout">
+        <!-- Col 1: Extras -->
+        <div id="sources-left" class="mapping-left"></div>
 
-      <button id="btn-add-source" class="btn-secondary" style="margin-top:12px">+ Weitere Quelle hinzufuegen</button>
+        <!-- Col 2: Tabellenspalten -->
+        <div id="sources-cols" class="mapping-cols"></div>
 
-      <div class="step-actions">
-        <button id="btn-sources-next" class="btn-primary btn-large">Weiter zum Mapping</button>
+        <!-- Col 3: Quellen -->
+        <div class="mapping-center">
+          <div id="sources-right" class="mapping-right"></div>
+          <button id="btn-add-source" class="btn-secondary" style="margin:12px 16px">+ Weitere Quelle hinzufuegen</button>
+        </div>
+
+        <!-- Col 4: Vorschau -->
+        <div class="mapping-preview-col">
+          <div id="sources-preview-card" class="preview-card">
+            <div class="preview-title">Vorschau</div>
+            <p class="empty-hint">Noch keine Felder befuellt.</p>
+          </div>
+        </div>
       </div>
     </section>
 
