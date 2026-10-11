@@ -28,12 +28,7 @@ const SOURCE_MODES = [
   {
     value: 'new',
     label: '✏️ Neue Quelle erstellen',
-    desc: 'Titel, Archiv etc. als feste Werte oder aus Tabellenspalten — Quelle wird in GEDCOM neu angelegt',
-  },
-  {
-    value: 'table',
-    label: '📋 Aus Tabelle',
-    desc: 'Alle Quellenfelder aus Tabellenspalten befüllen (auch aus einem anderen Tabellenblatt)',
+    desc: 'Quellenfelder als feste Werte oder aus Tabellenspalten — Quelle wird in GEDCOM neu angelegt',
   },
   {
     value: 'existing',
@@ -76,13 +71,8 @@ function createSourceDef() {
 }
 
 function applyModeDefaults(src) {
-  if (src.mode === 'new') {
-    src.sourceFields.forEach(f => { if (f.valueType === 'col') f.valueType = 'static'; });
-  } else if (src.mode === 'table') {
-    src.sourceFields.forEach(f => { f.valueType = 'col'; f.colIdx = null; });
-    src.citationFields.forEach(f => { f.valueType = 'col'; f.colIdx = null; });
-  }
-  // 'existing' — sourceFields irrelevant, citationFields bleiben
+  // 'new' — no changes, user controls each field individually
+  // 'existing' — sourceFields irrelevant, citationFields stay
 }
 
 function previewSourceField(field, dataRow) {

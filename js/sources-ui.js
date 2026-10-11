@@ -150,7 +150,7 @@ function renderSourceFieldRow(field, src, fieldSet) {
   row.appendChild(labelEl);
 
   // Toggle (only show in 'new' mode for sourceFields, always for citations)
-  const canToggle = src.mode !== 'table';
+  const canToggle = true; // both modes allow per-field toggle
   const typeWrap = document.createElement('div');
   typeWrap.className = 'source-type-toggle';
   if (canToggle) {
