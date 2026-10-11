@@ -572,3 +572,29 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .preview-val { color: #1a1a2e; font-weight: 500; }
 .preview-event { margin: 8px 0; padding: 8px 10px; background: #f8f9fc; border-radius: 6px; border-left: 3px solid #7ec8e3; }
 .preview-event-title { font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555; }
+
+/* ---- Source Settings Block ---- */
+.source-settings-block {
+  background: #fff;
+  border: 2px solid #ffe082;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.source-block-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+.source-mode-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.source-mode-option { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.source-detail { border-top: 1px solid #f0e8c8; padding-top: 12px; }
+.source-field-row { margin-bottom: 10px; }
+.source-field-row label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #555; font-weight: 500; }
+.source-input { border: 1px solid #d0d5dd; border-radius: 5px; padding: 5px 9px; font-size: 13px; width: 100%; }
+.source-col-sel { width: auto; }
+.source-hint { font-size: 11px; color: #aaa; font-style: italic; margin-top: 6px; }
+
+/* ---- Relatives ---- */
+.rel-hint { font-size: 12px; color: #aaa; font-style: italic; margin: 4px 0 8px; }
+.rel-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.rel-item { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rel-desc { font-size: 12px; color: #888; white-space: nowrap; }
+.rel-role-sel, .rel-person-sel { font-size: 12px; border: 1px solid #d0d5dd; border-radius: 5px; padding: 4px 6px; }
+.rel-person-sel { font-weight: 600; color: #1a1a2e; }

@@ -33,11 +33,13 @@ let activePersonId = null;
 function initMapping() {
   initMappingDomRefs();
   mappingPersons = [];
+  sourceSettings = { mode: 'static', title: '', archive: '', editor: '', citationColIdx: null, sheetName: '', titleColIdx: null, existingId: '' };
   const p = createPerson();
   p.label = 'Person';
   mappingPersons.push(p);
   activePersonId = p.id;
 
+  renderSourceSettings();
   renderColumnPalette();
   renderPersonList();
   renderPreview();
@@ -45,6 +47,298 @@ function initMapping() {
 }
 
 // ---- Column palette (left side) ----
+function renderColumnPalette() {
+  mappingLeft.innerHTML = '';
+
+  const title = document.createElement('h3');
+  title.className = 'palette-title';
+  title.textContent = 'Verfügbare Spalten';
+  mappingLeft.appendChild(title);
+
+  const hint = document.createElement('p');
+  hint.className = 'palette-hint';
+  hint.textContent = 'Spalten per Drag & Drop auf ein Feld ziehen.';
+  mappingLeft.appendChild(hint);
+
+  const gvars = collectGlobalVars();
+  if (Object.keys(gvars).length > 0) {
+    const gTitle = document.createElement('div');
+    gTitle.className = 'palette-section-title';
+    gTitle.textContent = '🔖 Globale Variablen';
+    mappingLeft.appendChild(gTitle);
+    Object.entries(gvars).forEach(([varName, value]) => {
+      const chip = document.createElement('div');
+      chip.className = 'col-chip var-chip';
+      chip.draggable = true;
+      chip.innerHTML = `<span class="chip-name">${escHtml(varName)}</span><span class="chip-val">${escHtml(value)}</span>`;
+      chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'var', varName, label: varName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+      chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+      mappingLeft.appendChild(chip);
+    });
+  }
+
+  const colTitle = document.createElement('div');
+  colTitle.className = 'palette-section-title';
+  colTitle.textContent = '📋 Tabellenspalten';
+  mappingLeft.appendChild(colTitle);
+
+  headers.forEach((colName, colIdx) => {
+    if (ignoredColumns.has(colIdx)) return;
+    const example = getColExample(colIdx);
+    const chip = document.createElement('div');
+    chip.className = 'col-chip';
+    chip.draggable = true;
+    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
+    chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'col', colIdx, label: colName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+    chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+    mappingLeft.appendChild(chip);
+  });
+
+  const staticTitle = document.createElement('div');
+  staticTitle.className = 'palette-section-title';
+  staticTitle.textContent = '✏️ Manuelle Eingabe';
+  mappingLeft.appendChild(staticTitle);
+  const staticChip = document.createElement('div');
+  staticChip.className = 'col-chip static-chip';
+  staticChip.draggable = true;
+  staticChip.innerHTML = `<span class="chip-name">✏️ Fester Wert</span><span class="chip-val">für alle Zeilen gleich</span>`;
+  staticChip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'static', value: '', label: 'Fester Wert' }; staticChip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
+  staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
+  mappingLeft.appendChild(staticChip);
+}
+
+function getColExample(colIdx) {
+  const row = getFirstDataRow();
+  const v = row[colIdx];
+  return v !== null && v !== undefined && String(v).trim() !== '' ? String(v).trim() : null;
+}
+
+// ---- Source Settings Block ----
+function renderSourceSettings() {  const container = document.getElementById('source-settings-block');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const title = document.createElement('div');
+  title.className = 'source-block-title';
+  title.textContent = '📚 Quelleneinstellungen';
+  container.appendChild(title);
+
+  // Mode selector
+  const modeWrap = document.createElement('div');
+  modeWrap.className = 'source-mode-wrap';
+  const modes = [
+    { value: 'static', label: 'Feste Quelle + Seitenzahl aus Tabelle' },
+    { value: 'sheet',  label: 'Aus Tabellenblatt „Quelle und Bearbeiter"' },
+    { value: 'column', label: 'Quelle aus Spalte (je Zeile unterschiedlich)' },
+    { value: 'existing', label: 'Vorhandene GEDCOM-Quell-ID' },
+  ];
+  modes.forEach(m => {
+    const lbl = document.createElement('label');
+    lbl.className = 'source-mode-option';
+    lbl.innerHTML = `<input type="radio" name="source-mode" value="${m.value}" ${sourceSettings.mode === m.value ? 'checked' : ''} /> ${m.label}`;
+    lbl.querySelector('input').addEventListener('change', () => {
+      sourceSettings.mode = m.value;
+      renderSourceSettings();
+      renderPreview();
+    });
+    modeWrap.appendChild(lbl);
+  });
+  container.appendChild(modeWrap);
+
+  // Mode-specific fields
+  const detail = document.createElement('div');
+  detail.className = 'source-detail';
+
+  if (sourceSettings.mode === 'static') {
+    detail.innerHTML = `
+      <div class="source-field-row">
+        <label>Titel / Bezeichnung<input class="source-input" id="src-title" value="${escHtml(sourceSettings.title)}" placeholder="z.B. Verzeichnis der Schüler des Gymnasiums Bautzen" /></label>
+      </div>
+      <div class="source-field-row">
+        <label>Archiv / Fundstelle<input class="source-input" id="src-archive" value="${escHtml(sourceSettings.archive)}" placeholder="z.B. Archivverbund Bautzen, Stadtarchiv, 62564-200" /></label>
+      </div>
+      <div class="source-field-row">
+        <label>Bearbeiter<input class="source-input" id="src-editor" value="${escHtml(sourceSettings.editor)}" placeholder="z.B. Matthes, Fiebiger" /></label>
+      </div>
+      <div class="source-field-row">
+        <label>Seitenzahl aus Spalte
+          ${colSelect('src-citation-col', sourceSettings.citationColIdx)}
+        </label>
+      </div>
+    `;
+    detail.querySelector('#src-title').addEventListener('input', e => { sourceSettings.title = e.target.value; });
+    detail.querySelector('#src-archive').addEventListener('input', e => { sourceSettings.archive = e.target.value; });
+    detail.querySelector('#src-editor').addEventListener('input', e => { sourceSettings.editor = e.target.value; });
+    detail.querySelector('#src-citation-col').addEventListener('change', e => {
+      sourceSettings.citationColIdx = e.target.value === '' ? null : parseInt(e.target.value);
+    });
+
+  } else if (sourceSettings.mode === 'sheet') {
+    const sheetOptions = parsedFile ? parsedFile.sheetNames.map(n =>
+      `<option value="${escHtml(n)}" ${sourceSettings.sheetName === n ? 'selected' : ''}>${escHtml(n)}</option>`
+    ).join('') : '';
+    detail.innerHTML = `
+      <div class="source-field-row">
+        <label>Tabellenblatt mit Quelldaten
+          <select class="source-input" id="src-sheet"><option value="">-- bitte wählen --</option>${sheetOptions}</select>
+        </label>
+      </div>
+      <p class="source-hint">Das Blatt muss die Felder „Quelle:" und „Bearbeiter:" enthalten.</p>
+    `;
+    detail.querySelector('#src-sheet').addEventListener('change', e => { sourceSettings.sheetName = e.target.value; });
+
+  } else if (sourceSettings.mode === 'column') {
+    detail.innerHTML = `
+      <div class="source-field-row">
+        <label>Quell-Titel aus Spalte ${colSelect('src-title-col', sourceSettings.titleColIdx)}</label>
+      </div>
+      <div class="source-field-row">
+        <label>Seitenzahl aus Spalte ${colSelect('src-citation-col2', sourceSettings.citationColIdx)}</label>
+      </div>
+    `;
+    detail.querySelector('#src-title-col').addEventListener('change', e => {
+      sourceSettings.titleColIdx = e.target.value === '' ? null : parseInt(e.target.value);
+    });
+    detail.querySelector('#src-citation-col2').addEventListener('change', e => {
+      sourceSettings.citationColIdx = e.target.value === '' ? null : parseInt(e.target.value);
+    });
+
+  } else if (sourceSettings.mode === 'existing') {
+    detail.innerHTML = `
+      <div class="source-field-row">
+        <label>GEDCOM Quell-ID<input class="source-input" id="src-existing-id" value="${escHtml(sourceSettings.existingId)}" placeholder="z.B. @S1@" /></label>
+      </div>
+      <p class="source-hint">Die Quelle muss bereits in der Ziel-GEDCOM-Datei vorhanden sein.</p>
+    `;
+    detail.querySelector('#src-existing-id').addEventListener('input', e => { sourceSettings.existingId = e.target.value; });
+  }
+
+  container.appendChild(detail);
+}
+
+function colSelect(id, selectedIdx) {
+  const opts = ['<option value="">-- keine --</option>'];
+  headers.forEach((h, i) => {
+    if (ignoredColumns.has(i)) return;
+    opts.push(`<option value="${i}" ${selectedIdx === i ? 'selected' : ''}>${escHtml(h)}</option>`);
+  });
+  return `<select class="source-input source-col-sel" id="${id}">${opts.join('')}</select>`;
+}
+
+// ---- Person list (right side) ----
+function renderPersonList() {
+  mappingRight.innerHTML = '';
+
+  mappingPersons.forEach(person => {
+    const card = document.createElement('div');
+    card.className = 'person-card' + (person.id === activePersonId ? ' active' : '');
+    card.id = 'person-' + person.id;
+
+    // Card header
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'person-card-header';
+    cardHeader.innerHTML = `
+      <span class="person-icon">👤</span>
+      <input class="person-label-input" value="${escHtml(person.label)}" placeholder="Personenbezeichnung" />
+      <button class="btn-icon btn-remove-person" title="Person entfernen" data-pid="${person.id}">✕</button>
+    `;
+    cardHeader.querySelector('.person-label-input').addEventListener('input', e => {
+      person.label = e.target.value;
+      renderPersonList();
+      renderPreview();
+    });
+    cardHeader.querySelector('.btn-remove-person').addEventListener('click', () => {
+      if (mappingPersons.length === 1) { alert('Mindestens eine Person muss vorhanden sein.'); return; }
+      // Remove any relatives pointing to this person
+      mappingPersons.forEach(p => {
+        p.relatives = p.relatives.filter(r => r.targetPersonId !== person.id);
+      });
+      mappingPersons = mappingPersons.filter(p => p.id !== person.id);
+      if (activePersonId === person.id) activePersonId = mappingPersons[0].id;
+      renderPersonList();
+      renderPreview();
+    });
+    card.appendChild(cardHeader);
+
+    // Person fields section
+    const fieldsSection = document.createElement('div');
+    fieldsSection.className = 'fields-section';
+    fieldsSection.innerHTML = '<div class="fields-section-title">Personenfelder</div>';
+    person.fields.forEach(field => fieldsSection.appendChild(renderField(field, person, null)));
+    const addFieldBtn = createAddButton('+ Feld hinzufügen', GEDCOM_PERSON_FIELDS, (path) => {
+      addPersonField(person, path); renderPersonList(); renderPreview();
+    });
+    fieldsSection.appendChild(addFieldBtn);
+    card.appendChild(fieldsSection);
+
+    // Events section
+    const evSection = document.createElement('div');
+    evSection.className = 'fields-section';
+    evSection.innerHTML = '<div class="fields-section-title">Ereignisse</div>';
+    person.events.forEach(ev => evSection.appendChild(renderEvent(ev, person)));
+    const addEvBtn = createAddButton('+ Ereignis hinzufügen', GEDCOM_EVENT_TYPES.map(e => ({path: e.tag, label: e.label})), (tag) => {
+      addEvent(person, tag); renderPersonList(); renderPreview();
+    });
+    evSection.appendChild(addEvBtn);
+    card.appendChild(evSection);
+
+    // Relatives section — links to other persons in this mapping
+    const relSection = document.createElement('div');
+    relSection.className = 'fields-section';
+    relSection.innerHTML = '<div class="fields-section-title">Beziehungen zu anderen Personen</div>';
+
+    const otherPersons = mappingPersons.filter(p => p.id !== person.id);
+
+    if (otherPersons.length === 0) {
+      const hint = document.createElement('p');
+      hint.className = 'rel-hint';
+      hint.textContent = 'Fügen Sie eine weitere Person hinzu, um Beziehungen definieren zu können.';
+      relSection.appendChild(hint);
+    } else {
+      const relList = document.createElement('div');
+      relList.className = 'rel-list';
+      person.relatives.forEach(rel => {
+        const relItem = document.createElement('div');
+        relItem.className = 'rel-item';
+        const roleOptions = ['Vater','Mutter','Kind','Partner','Geschwister'].map(r =>
+          `<option value="${r}" ${rel.role === r ? 'selected' : ''}>${r}</option>`
+        ).join('');
+        const personOptions = otherPersons.map(p =>
+          `<option value="${p.id}" ${rel.targetPersonId === p.id ? 'selected' : ''}>${escHtml(p.label)}</option>`
+        ).join('');
+        relItem.innerHTML = `
+          <span class="rel-desc">ist</span>
+          <select class="rel-role-sel">${roleOptions}</select>
+          <span class="rel-desc">von</span>
+          <select class="rel-person-sel">${personOptions}</select>
+          <button class="btn-icon" title="Beziehung entfernen">✕</button>
+        `;
+        relItem.querySelector('.rel-role-sel').addEventListener('change', e => { rel.role = e.target.value; renderPreview(); });
+        relItem.querySelector('.rel-person-sel').addEventListener('change', e => { rel.targetPersonId = e.target.value; renderPreview(); });
+        relItem.querySelector('.btn-icon').addEventListener('click', () => {
+          person.relatives = person.relatives.filter(r => r.id !== rel.id);
+          renderPersonList(); renderPreview();
+        });
+        relList.appendChild(relItem);
+      });
+      relSection.appendChild(relList);
+
+      const addRelBtn = document.createElement('button');
+      addRelBtn.className = 'btn-secondary btn-small';
+      addRelBtn.textContent = '+ Beziehung hinzufügen';
+      addRelBtn.addEventListener('click', () => {
+        person.relatives.push({ id: newId(), role: 'Vater', targetPersonId: otherPersons[0].id });
+        renderPersonList(); renderPreview();
+      });
+      relSection.appendChild(addRelBtn);
+    }
+    card.appendChild(relSection);
+
+    mappingRight.appendChild(card);
+  });
+
+  mappingRight.appendChild(btnAddPerson);
+}
 function renderColumnPalette() {
   mappingLeft.innerHTML = '';
 

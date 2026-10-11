@@ -33,13 +33,22 @@ const GEDCOM_EVENT_FIELDS = [
   { path: 'SOUR.PAGE', label: 'Quelle / Seite' },
 ];
 
-// ---- Source Types ----
-// A "source" is one piece that contributes to a field value:
-// { type:'col', colIdx:N, label:'Vorname' }
-// { type:'static', value:'...' }
-// { type:'var', varName:'{Jahr}' }
+// ---- Source Settings State ----
+let sourceSettings = {
+  mode: 'static',       // 'static' | 'sheet' | 'column' | 'existing'
+  // mode: static
+  title: '',
+  archive: '',
+  editor: '',
+  citationColIdx: null, // Spalte für Seitenzahl
+  // mode: sheet
+  sheetName: '',        // Name des Quell-Sheets
+  // mode: column
+  titleColIdx: null,
+  // mode: existing
+  existingId: '',
+};
 
-// ---- Mapping State ----
 let mappingPersons = [];  // Array of person templates
 let mappingIdCounter = 0;
 
@@ -51,7 +60,7 @@ function createPerson() {
     label: 'Person',
     fields: [],   // [{id, path, label, sources:[...]}]
     events: [],   // [{id, tag, label, customType, fields:[...]}]
-    relatives: [] // [{id, role:'Vater'|'Mutter'|'Kind'|'Partner', personId}]
+    relatives: [] // [{id, role:'Vater'|'Mutter'|'Kind'|'Partner', targetPersonId}]
   };
 }
 
