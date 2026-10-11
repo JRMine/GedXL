@@ -2,22 +2,38 @@
  * sources.js — Quelleneinstellungen State & Logik
  */
 
+// ---- Available GEDCOM source fields (for "+" button) ----
+const AVAILABLE_SOURCE_FIELDS = [
+  { tag: 'TITL', label: 'Titel / Bezeichnung' },
+  { tag: 'AUTH', label: 'Autor / Bearbeiter' },
+  { tag: 'REPO', label: 'Archiv / Fundstelle' },
+  { tag: 'PUBL', label: 'URL / Publikationsangabe' },
+  { tag: 'ABBR', label: 'Abkürzung' },
+  { tag: 'TEXT', label: 'Textauszug' },
+  { tag: 'NOTE', label: 'Notiz zur Quelle' },
+  { tag: 'CHAN', label: 'Änderungsdatum' },
+];
+
+const AVAILABLE_CITATION_FIELDS = [
+  { tag: 'PAGE', label: 'Seite / Fundstelle' },
+  { tag: 'DATA', label: 'Transkription / Zitat' },
+  { tag: 'NOTE', label: 'Notiz zur Zitation' },
+  { tag: 'QUAY', label: 'Qualitätsbewertung (0-3)' },
+  { tag: 'EVEN', label: 'Ereignisbezug' },
+  { tag: 'DATE', label: 'Datum der Abschrift' },
+];
+
 // ---- Source Modes ----
 const SOURCE_MODES = [
   {
-    value: 'static',
-    label: '✏️ Feste Quelle',
-    desc: 'Titel, Archiv etc. als feste Werte — Seitenzahl aus Tabellenspalte',
+    value: 'new',
+    label: '✏️ Neue Quelle erstellen',
+    desc: 'Titel, Archiv etc. als feste Werte oder aus Tabellenspalten — Quelle wird in GEDCOM neu angelegt',
   },
   {
-    value: 'sheet',
-    label: '📋 Aus Tabellenblatt',
-    desc: 'Quellangaben aus einem separaten Sheet (z.B. „Quelle und Bearbeiter") auslesen',
-  },
-  {
-    value: 'column',
-    label: '🔄 Aus Spalten',
-    desc: 'Alle Quellenfelder variieren je Zeile — alles aus Tabellenspalten',
+    value: 'table',
+    label: '📋 Aus Tabelle',
+    desc: 'Alle Quellenfelder aus Tabellenspalten befüllen (auch aus einem anderen Tabellenblatt)',
   },
   {
     value: 'existing',
@@ -32,24 +48,26 @@ let sourceIdCounter = 0;
 
 function newSourceId() { return 'src_' + (++sourceIdCounter); }
 
+function createSourceFieldDef(tag, label, valueType = 'static') {
+  return { id: newSourceId(), tag, label, valueType, value: '', colIdx: null };
+}
+
 function createSourceDef() {
   return {
     id: newSourceId(),
     name: 'Quelle 1',
-    mode: 'static', // 'static' | 'sheet' | 'column' | 'existing'
+    mode: 'new',
 
     sourceFields: [
-      { tag: 'TITL', label: 'Titel / Bezeichnung',       valueType: 'static', value: '', colIdx: null },
-      { tag: 'AUTH', label: 'Autor / Bearbeiter',         valueType: 'static', value: '', colIdx: null },
-      { tag: 'REPO', label: 'Archiv / Fundstelle',        valueType: 'static', value: '', colIdx: null },
-      { tag: 'PUBL', label: 'URL / Publikationsangabe',   valueType: 'static', value: '', colIdx: null },
-      { tag: 'NOTE', label: 'Notiz zur Quelle',           valueType: 'static', value: '', colIdx: null },
+      createSourceFieldDef('TITL', 'Titel / Bezeichnung', 'static'),
+      createSourceFieldDef('AUTH', 'Autor / Bearbeiter',  'static'),
+      createSourceFieldDef('REPO', 'Archiv / Fundstelle', 'static'),
+      createSourceFieldDef('PUBL', 'URL / Publikationsangabe', 'static'),
     ],
 
     citationFields: [
-      { tag: 'PAGE', label: 'Seite / Fundstelle',         valueType: 'col',    value: '', colIdx: null },
-      { tag: 'DATA', label: 'Transkription / Zitat',      valueType: 'col',    value: '', colIdx: null },
-      { tag: 'NOTE', label: 'Notiz zur Zitation',         valueType: 'static', value: '', colIdx: null },
+      createSourceFieldDef('PAGE', 'Seite / Fundstelle', 'col'),
+      createSourceFieldDef('DATA', 'Transkription / Zitat', 'col'),
     ],
 
     existingId: '',
@@ -57,18 +75,14 @@ function createSourceDef() {
   };
 }
 
-/**
- * Passt valueType-Defaults beim Moduswechsel an.
- */
 function applyModeDefaults(src) {
-  if (src.mode === 'static') {
-    src.sourceFields.forEach(f => { f.valueType = 'static'; });
-    // Zitation bleibt col
-  } else if (src.mode === 'sheet' || src.mode === 'column') {
+  if (src.mode === 'new') {
+    src.sourceFields.forEach(f => { if (f.valueType === 'col') f.valueType = 'static'; });
+  } else if (src.mode === 'table') {
     src.sourceFields.forEach(f => { f.valueType = 'col'; f.colIdx = null; });
     src.citationFields.forEach(f => { f.valueType = 'col'; f.colIdx = null; });
   }
-  // 'existing' — alles irrelevant
+  // 'existing' — sourceFields irrelevant, citationFields bleiben
 }
 
 function previewSourceField(field, dataRow) {

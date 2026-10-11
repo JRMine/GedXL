@@ -774,3 +774,9 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .mode-tile-label { font-size: 13px; font-weight: 600; color: #1a1a2e; }
 .mode-tile-desc { font-size: 11px; color: #888; line-height: 1.4; }
 .source-mode-tile.active .mode-tile-label { color: #1a1a2e; }
+
+/* ---- Source field remove + fixed toggle ---- */
+.source-field-remove { font-size: 11px; flex-shrink: 0; }
+.source-field-row-ui { grid-template-columns: 200px 200px 1fr 20px; }
+.toggle-fixed { font-size: 11px; color: #888; font-style: italic; }
+.source-attach-note { margin-top: 6px; }
