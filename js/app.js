@@ -89,6 +89,24 @@ fileInput.addEventListener('change', () => {
   if (fileInput.files[0]) handleFile(fileInput.files[0]);
 });
 
+// ---- Profil-Upload im Upload-Schritt ----
+document.getElementById('profile-load-input-upload').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('profile-upload-status');
+  try {
+    const profile = await loadProfileFromFile(file);
+    applyProfile(profile);
+    statusEl.textContent = 'Profil geladen: ' + file.name + ' \u2713';
+    statusEl.className = 'profile-status profile-status-ok';
+  } catch (err) {
+    statusEl.textContent = 'Fehler: ' + err.message;
+    statusEl.className = 'profile-status profile-status-error';
+  }
+  setTimeout(() => { statusEl.textContent = ''; statusEl.className = 'profile-status'; }, 5000);
+  e.target.value = '';
+});
+
 // ---- File handling ----
 async function handleFile(file) {
   uploadedFileName = file.name.replace(/\.[^.]+$/, ''); // ohne Extension

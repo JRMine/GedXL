@@ -51,6 +51,14 @@
         <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden />
       </div>
       <p class="hint">Ihre Datei wird nur lokal im Browser verarbeitet &ndash; es werden keine Daten hochgeladen.</p>
+      <div class="profile-upload-section">
+        <p class="profile-upload-title">&#128190; Bereits ein Mapping-Profil gespeichert?</p>
+        <label class="btn-secondary profile-load-label" title="Gespeichertes Profil laden">
+          Profil laden (JSON)
+          <input type="file" id="profile-load-input-upload" accept=".json" style="display:none" />
+        </label>
+        <span id="profile-upload-status" class="profile-status"></span>
+      </div>
     </section>
 
     <!-- STEP 1b: Sheet selection -->

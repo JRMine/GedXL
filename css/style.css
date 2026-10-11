@@ -948,3 +948,13 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .profile-status { font-size: 12px; margin-left: 4px; }
 .profile-status-ok    { color: #166534; }
 .profile-status-error { color: #991b1b; }
+
+/* ---- Profil-Upload im Upload-Schritt ---- */
+.profile-upload-section {
+  margin-top: 20px; padding: 14px 18px;
+  background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 8px;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.profile-upload-title {
+  font-size: 13px; font-weight: 600; color: #3730a3; margin: 0;
+}

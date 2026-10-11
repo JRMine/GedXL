@@ -138,7 +138,7 @@ function initExport() {
 
   const saveProfileBtn = document.createElement('button');
   saveProfileBtn.className = 'btn-secondary btn-large';
-  saveProfileBtn.textContent = '&#128190; Mapping-Profil speichern';
+  saveProfileBtn.innerHTML = '&#128190; Mapping-Profil speichern';
   saveProfileBtn.style.marginLeft = '10px';
   saveProfileBtn.addEventListener('click', () => {
     saveProfile();
