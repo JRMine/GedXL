@@ -51,7 +51,9 @@ function normalizeDate(raw) {
 // ---- Build citation lines for a source ----
 function buildCitationLines(src, level, dataRow, gvars) {
   const lines = [];
-  const sourceRef = src.mode === 'existing' ? src.existingId : ('@S' + src.id + '@');
+  // Use _gedId set during SOUR generation, or existingId
+  const sourceRef = src.mode === 'existing' ? src.existingId : src._gedId;
+  if (!sourceRef) return lines;
   lines.push(level + ' SOUR ' + sourceRef);
   src.citationFields.forEach(f => {
     const v = previewSourceField(f, dataRow);
@@ -215,7 +217,7 @@ function generateGEDCOM() {
 
     // FAM records
     // Find all partner/parent-child relationships and group into families
-    const famGroups = buildFamGroups(mappingPersons, indiIds);
+    const famGroups = buildFamGroups(mappingPersons, indiIds, row, gvars);
     famGroups.forEach(fam => {
       famCounter++;
       const famId = '@F' + famCounter + '@';
@@ -237,39 +239,65 @@ function generateGEDCOM() {
 }
 
 // ---- Group FAM relationships ----
-function buildFamGroups(persons, indiIds) {
+function buildFamGroups(persons, indiIds, row, gvars) {
   const FAM_ROLES = ['Vater','Mutter','Kind','Partner','Geschwister'];
   const families = [];
+
+  // Helper: resolve SEX for a person in this row
+  function getSex(person) {
+    const sexField = person.fields.find(f => f.path === 'SEX');
+    if (!sexField) return null;
+    const v = resolveField(sexField, row, gvars);
+    if (!v) return null;
+    const s = v.trim().toUpperCase();
+    if (s === 'M' || s === 'MALE' || s === 'MANN' || s === 'M\u00C4NNLICH') return 'M';
+    if (s === 'F' || s === 'W' || s === 'FEMALE' || s === 'FRAU' || s === 'WEIBLICH') return 'F';
+    return null;
+  }
+
+  // Helper: place a person into FAM as HUSB or WIFE based on SEX
+  function assignSpouse(fam, personId, person) {
+    const sex = getSex(person);
+    if (sex === 'F') {
+      if (!fam.wife) fam.wife = personId;
+    } else {
+      // M or unknown → HUSB (warn handled in validate)
+      if (!fam.husb) fam.husb = personId;
+      else if (!fam.wife) fam.wife = personId;
+    }
+  }
 
   persons.forEach(person => {
     person.relatives.filter(r => FAM_ROLES.includes(r.role)).forEach(rel => {
       const pId = indiIds[person.id];
       const tId = indiIds[rel.targetPersonId];
-      if (!tId) return;
+      const targetPerson = persons.find(p => p.id === rel.targetPersonId);
+      if (!tId || !targetPerson) return;
 
       if (rel.role === 'Partner') {
-        // Check if fam already exists for this pair
         let fam = families.find(f =>
           (f.husb === pId && f.wife === tId) ||
-          (f.husb === tId && f.wife === pId)
+          (f.husb === tId && f.wife === pId) ||
+          (f.husb === pId || f.wife === pId) && (f.husb === tId || f.wife === tId)
         );
         if (!fam) {
-          fam = { husb: pId, wife: null, children: [] };
+          fam = { husb: null, wife: null, children: [], _personIds: [pId, tId] };
           families.push(fam);
+          assignSpouse(fam, pId, person);
+          assignSpouse(fam, tId, targetPerson);
         }
-        if (!fam.wife) fam.wife = tId;
 
       } else if (rel.role === 'Kind') {
         // person is child of targetPerson
         let fam = families.find(f => f.husb === tId || f.wife === tId);
         if (!fam) {
-          fam = { husb: tId, wife: null, children: [] };
+          fam = { husb: null, wife: null, children: [] };
+          assignSpouse(fam, tId, targetPerson);
           families.push(fam);
         }
         if (!fam.children.includes(pId)) fam.children.push(pId);
 
       } else if (rel.role === 'Vater') {
-        // targetPerson is father of person
         let fam = families.find(f => f.husb === tId);
         if (!fam) {
           fam = { husb: tId, wife: null, children: [] };
@@ -286,7 +314,6 @@ function buildFamGroups(persons, indiIds) {
         if (!fam.children.includes(pId)) fam.children.push(pId);
 
       } else if (rel.role === 'Geschwister') {
-        // Both are children of same family — create placeholder if needed
         let fam = families.find(f => f.children.includes(pId) || f.children.includes(tId));
         if (!fam) {
           fam = { husb: null, wife: null, children: [] };
@@ -298,7 +325,6 @@ function buildFamGroups(persons, indiIds) {
     });
   });
 
-  // Only include families that have at least 2 members
   return families.filter(f => f.husb || f.wife || f.children.length > 0);
 }
 
@@ -332,9 +358,18 @@ function validateBeforeExport() {
     warnings.push({ level: 'error', msg: 'Keine Datenzeilen gefunden.' });
   }
 
+  const FAM_ROLES = ['Vater','Mutter','Kind','Partner','Geschwister'];
   mappingPersons.forEach(person => {
     const hasName = person.fields.some(f => f.path === 'NAME.GIVN' || f.path === 'NAME.SURN');
     if (!hasName) warnings.push({ level: 'warn', msg: person.label + ': Kein Namensfeld (GIVN/SURN) zugeordnet.' });
+
+    // SEX-Warnung wenn Person in FAM-Beziehung steckt
+    const inFam = person.relatives.some(r => FAM_ROLES.includes(r.role)) ||
+      mappingPersons.some(other => other.relatives.some(r => FAM_ROLES.includes(r.role) && r.targetPersonId === person.id));
+    const hasSex = person.fields.some(f => f.path === 'SEX');
+    if (inFam && !hasSex) {
+      warnings.push({ level: 'warn', msg: person.label + ': Hat FAM-Beziehungen, aber kein Geschlechtsfeld (SEX) zugeordnet. HUSB/WIFE-Zuweisung im FAM-Record koennte falsch sein.' });
+    }
   });
 
   if (sourceDefs.length === 0) {
