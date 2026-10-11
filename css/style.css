@@ -337,7 +337,7 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 
 .mapping-layout {
   display: grid;
-  grid-template-columns: 240px 480px 1fr 240px;
+  grid-template-columns: 240px 480px 1fr 300px;
   gap: 14px;
   align-items: start;
 }
