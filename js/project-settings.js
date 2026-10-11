@@ -104,7 +104,7 @@ function updateProjectPreview() {
   lines.push('2 NAME GedXL Konverter');
   if (cfg.fileDesc) lines.push('1 FILE ' + cfg.fileDesc);
   lines.push('1 GEDC');
-  lines.push('2 VERS ' + cfg.gedcomVer);
+  lines.push('2 VERS ' + (cfg.gedcomVer === '7.0' ? '7.0.0' : cfg.gedcomVer));
   if (cfg.gedcomVer !== '7.0') {
     lines.push('2 FORM LINEAGE-LINKED');
     lines.push('1 CHAR ' + cfg.charSet);

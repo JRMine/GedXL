@@ -1,5 +1,5 @@
 /**
- * export.js - GEDCOM 5.5.1 Generator
+ * export.js - GEDCOM 5.5.1 + 7.0 Generator
  *
  * Reads: mappingPersons, sourceDefs, currentRows, classifications, headers, ignoredColumns
  * Produces: a .ged file string and triggers browser download
@@ -18,29 +18,87 @@ function gedLine(level, tag, value) {
   return level + ' ' + tag + ' ' + String(value).trim();
 }
 
+// ---- Lange Texte splitten (CONT-Zeilen) ----
+// GEDCOM 5.5.1: CONC + CONT erlaubt
+// GEDCOM 7.0:   nur CONT erlaubt (kein CONC)
+function splitLongValue(level, tag, value, isV7) {
+  const lines = [];
+  const str = String(value);
+  const parts = str.split('\n');
+  const maxLen = 248;
+  parts.forEach((part, idx) => {
+    if (idx === 0) {
+      if (!isV7 && part.length > maxLen) {
+        lines.push(level + ' ' + tag + ' ' + part.slice(0, maxLen));
+        for (let i = maxLen; i < part.length; i += maxLen)
+          lines.push((level + 1) + ' CONC ' + part.slice(i, i + maxLen));
+      } else {
+        lines.push(level + ' ' + tag + ' ' + part);
+      }
+    } else {
+      lines.push((level + 1) + ' CONT ' + part);
+    }
+  });
+  return lines;
+}
+
+// ---- SEX-Wert normalisieren ----
+// GEDCOM 7.0: nur M, F, X, U erlaubt (case-sensitive)
+function normalizeSex(raw, isV7) {
+  if (!raw) return null;
+  const v = String(raw).trim();
+  if (/^(m|male|männlich|maennlich|mann)$/i.test(v)) return 'M';
+  if (/^(f|female|weiblich|frau)$/i.test(v)) return 'F';
+  if (/^(x|divers|nonbinary|non-binary|inter)$/i.test(v)) return 'X';
+  if (/^(u|unknown|unbekannt|\?)$/i.test(v)) return 'U';
+  if (/^(n|none|null)$/i.test(v)) return isV7 ? 'U' : 'N';
+  const upper = v.toUpperCase();
+  if ('MFU'.includes(upper)) return upper;
+  if (!isV7 && 'XN'.includes(upper)) return upper;
+  if (isV7 && upper === 'X') return upper;
+  return null;
+}
+
+// ---- NOTE-Zeilen ausgeben (v7: als Record-Referenz, 5.5.1: inline) ----
+// noteCounter wird per Export-Lauf hochgezaehlt
+// noteRecords sammelt {id, text} fuer spaetere Record-Ausgabe
+let _noteCounter = 0;
+let _noteRecords = [];
+function emitNote(level, text, isV7) {
+  if (!text) return [];
+  if (isV7) {
+    _noteCounter++;
+    const nid = '@N' + _noteCounter + '@';
+    _noteRecords.push({ id: nid, text });
+    return [level + ' NOTE ' + nid];
+  } else {
+    return splitLongValue(level, 'NOTE', text, false);
+  }
+}
+
 // ---- Resolve a field value for a given data row ----
 function resolveField(field, dataRow, gvars) {
   return previewFieldValue(field, dataRow, gvars) || null;
 }
 
-// ---- Normalize a date string to GEDCOM date format ----
-// Gibt { gedcom, note, unrecognized } zurueck
-function normalizeDate(raw) {
+// ---- Datum normalisieren ----
+function normalizeDate(raw, isV7) {
   if (!raw) return null;
   const s = String(raw).trim();
   if (s === '') return null;
 
-  // Already a GEDCOM date
-  if (/^(?:ABT|AFT|BEF|BET|CAL|EST|FROM|TO|INT)?\s*\d/.test(s) && /[A-Z]{3}/.test(s)) return { gedcom: s, note: null, unrecognized: false };
+  // Schon ein GEDCOM-Datum
+  if (/^(?:ABT|AFT|BEF|BET|CAL|EST|FROM|TO|INT)?\s*\d/.test(s) && /[A-Z]{3}/.test(s)) {
+    const clean = isV7 ? s.replace(/@#D\w+@\s*/g, '') : s;
+    return { gedcom: clean, note: null, unrecognized: false };
+  }
   if (/^\d{1,2}\s+[A-Z]{3}\s+\d{4}$/.test(s)) return { gedcom: s, note: null, unrecognized: false };
 
-  // Historischen Parser versuchen
   if (typeof parseHistoricalDate === 'function') {
     const parsed = parseHistoricalDate(s);
     if (parsed) return { gedcom: parsed.gedcom, note: parsed.note, unrecognized: false };
   }
 
-  // ISO YYYY-MM-DD
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (iso) {
     const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -48,7 +106,6 @@ function normalizeDate(raw) {
     if (m >= 0 && m < 12) return { gedcom: iso[3] + ' ' + months[m] + ' ' + iso[1], note: null, unrecognized: false };
   }
 
-  // Nicht erkannt
   return { gedcom: null, note: 'Originalwert: ' + s, unrecognized: true };
 }
 
@@ -58,49 +115,13 @@ function resolvePersonName(person, row, gvars) {
   const surnF = person.fields.find(f => f.path === 'NAME.SURN');
   const givn = givnF ? resolveField(givnF, row, gvars) : null;
   const surn = surnF ? resolveField(surnF, row, gvars) : null;
-  if (givn && surn) return givn + ' ' + surn;
-  if (givn) return givn;
-  if (surn) return surn;
-  return person.label || '(unbekannt)';
+  return [givn, surn].filter(Boolean).join(' ') || ('Person ' + person.id);
 }
-
-// ---- Build citation lines for a source ----
-function buildCitationLines(src, level, dataRow, gvars) {
-  const lines = [];
-  // Use _gedId set during SOUR generation, or existingId
-  const sourceRef = src.mode === 'existing' ? src.existingId : src._gedId;
-  if (!sourceRef) return lines;
-  lines.push(level + ' SOUR ' + sourceRef);
-  src.citationFields.forEach(f => {
-    const v = previewSourceField(f, dataRow);
-    if (!v) return;
-    lines.push((level + 1) + ' ' + f.tag + ' ' + v);
-  });
-  return lines;
-}
-
-// ---- Collect citations for a given context (person or event) ----
-function collectCitations(manualCitations, attachFilter, dataRow, gvars) {
-  const lines = [];
-  // Auto-attach sources
-  sourceDefs.forEach(src => {
-    if (src.attachTo[attachFilter]) {
-      buildCitationLines(src, 1, dataRow, gvars).forEach(l => lines.push(l));
-    }
-  });
-  // Manual extra citations (not already auto-attached)
-  manualCitations.forEach(cit => {
-    const src = sourceDefs.find(s => s.id === cit.sourceId);
-    if (!src || src.attachTo[attachFilter]) return; // already included
-    buildCitationLines(src, 1, dataRow, gvars).forEach(l => lines.push(l));
-  });
-  return lines;
-}
-
-// ---- Generate GEDCOM for all DATA rows ----
 function generateGEDCOM(headConfig) {
   headConfig = headConfig || {};
   dateReport = []; // Reset fuer neuen Export
+  _noteCounter = 0;
+  _noteRecords  = [];
   const gvars = collectGlobalVars();
   const dataRows = currentRows.map((row, i) => ({ row, i })).filter(({ i }) => classifications[i]?.type === 'DATA');
   const FAM_ROLES = ['Vater','Mutter','Kind','Partner','Geschwister'];
@@ -123,18 +144,30 @@ function generateGEDCOM(headConfig) {
   lines.push('2 NAME GedXL Excel/CSV zu GEDCOM Konverter');
   if (headConfig.fileDesc) lines.push('1 FILE ' + headConfig.fileDesc);
   lines.push('1 GEDC');
-  lines.push('2 VERS ' + (headConfig.gedcomVer || '5.5.1'));
+  // GEDCOM 7: exakte Version 7.0.0 (dreistellig), kein FORM
+  lines.push('2 VERS ' + (isV7 ? '7.0.0' : (headConfig.gedcomVer || '5.5.1')));
   if (!isV7) {
     lines.push('2 FORM LINEAGE-LINKED');
     lines.push('1 CHAR ' + (headConfig.charSet || 'UTF-8'));
   }
+  // GEDCOM 7: SCHMA fuer verwendete Extension-Tags (leer wenn keine)
+  if (isV7) {
+    lines.push('1 SCHMA');
+  }
   if (headConfig.lang) lines.push('1 LANG ' + headConfig.lang);
   lines.push('1 DATE ' + gedcomToday());
+  if (isV7) {
+    // GEDCOM 7: HEAD.DATE braucht TIME nicht zwingend, aber erlaubt
+    // Kein HEAD.CHAR, kein HEAD.GEDC.FORM
+  }
   if (headConfig.submitter) lines.push('1 SUBM @SUBM1@');
   if (headConfig.note) {
     if (isV7) {
-      // GEDCOM 7: NOTE als eigener Record
-      lines.push('1 NOTE @N1@');
+      // GEDCOM 7: NOTE als eigener Record - wird spaeter mit _noteRecords ausgegeben
+      _noteCounter++;
+      const headNoteId = '@N' + _noteCounter + '@';
+      _noteRecords.push({ id: headNoteId, text: headConfig.note });
+      lines.push('1 NOTE ' + headNoteId);
     } else {
       lines.push('1 NOTE ' + headConfig.note);
     }
@@ -185,14 +218,22 @@ function generateGEDCOM(headConfig) {
       // Other person fields
       person.fields.forEach(field => {
         if (field.path.startsWith('NAME.')) return; // already handled
-        const v = resolveField(field, row, gvars);
+        let v = resolveField(field, row, gvars);
         if (!v) return;
+        // SEX normalisieren
+        if (field.path === 'SEX') {
+          const sexNorm = normalizeSex(v, isV7);
+          if (sexNorm) lines.push('1 SEX ' + sexNorm);
+          return;
+        }
         if (field.path.includes('.')) {
           const [tag, sub] = field.path.split('.');
           lines.push('1 ' + tag);
           lines.push('2 ' + sub + ' ' + v);
+        } else if (field.path === 'NOTE') {
+          emitNote(1, v, isV7).forEach(l => lines.push(l));
         } else {
-          lines.push('1 ' + field.path + ' ' + v);
+          splitLongValue(1, field.path, v, isV7).forEach(l => lines.push(l));
         }
       });
 
@@ -214,15 +255,15 @@ function generateGEDCOM(headConfig) {
           let v = resolveField(field, row, gvars);
           if (!v) return;
           if (field.path === 'DATE') {
-            const norm = normalizeDate(v);
+            const norm = normalizeDate(v, isV7);
             if (!norm) return;
             if (norm.unrecognized) {
               lines.push('2 DATE');
-              lines.push('3 NOTE Originalwert: ' + v);
+              emitNote(3, 'Originalwert: ' + v, isV7).forEach(l => lines.push(l));
               addDateReport(resolvePersonName(person, row, gvars), i + 1, ev.label || evTag, v, null, 'Nicht erkannt', true);
             } else {
               lines.push('2 DATE ' + norm.gedcom);
-              if (norm.note) lines.push('3 NOTE ' + norm.note);
+              if (norm.note) emitNote(3, norm.note, isV7).forEach(l => lines.push(l));
               // Nur im Report wenn automatisch konvertiert (nicht triviale Daten)
               if (norm.note || /Johannis|Michaelis|Ostern|Pfingsten|Martini|Himmelfahrt|Trinitatis|O\.S\.|Doppeljahr|ABT|BEF|AFT|BET/i.test(v)) {
                 addDateReport(resolvePersonName(person, row, gvars), i + 1, ev.label || evTag, v, norm.gedcom, norm.note, false);
@@ -278,17 +319,21 @@ function generateGEDCOM(headConfig) {
     lines.push('');
   }
 
-  // ---- GEDCOM 7: NOTE record fuer Header-Notiz ----
-  if (isV7 && headConfig.note) {
-    lines.push('0 @N1@ NOTE');
-    lines.push('1 TRAN ' + headConfig.note);
-    lines.push('');
+  // ---- GEDCOM 7: NOTE-Records (gesammelt waehrend INDI-Generierung) ----
+  if (isV7 && _noteRecords.length > 0) {
+    _noteRecords.forEach(nr => {
+      lines.push('0 ' + nr.id + ' NOTE ' + nr.text.split('\n')[0]);
+      const rest = nr.text.split('\n').slice(1);
+      rest.forEach(l => lines.push('1 CONT ' + l));
+      lines.push('');
+    });
   }
 
   // ---- TRLR ----
   lines.push('0 TRLR');
 
-  return lines.filter(l => l !== null).join('\n');
+  const lineEnd = isV7 ? '\r\n' : '\n';
+  return lines.filter(l => l !== null).join(lineEnd);
 }
 
 // ---- Group FAM relationships ----
