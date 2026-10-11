@@ -22,11 +22,15 @@
       </div>
       <div class="step-nav-sep">›</div>
       <div class="step-nav-item disabled" id="nav-3">
-        <span class="nav-num">3</span> Mapping
+        <span class="nav-num">3</span> Quellen
       </div>
       <div class="step-nav-sep">›</div>
       <div class="step-nav-item disabled" id="nav-4">
-        <span class="nav-num">4</span> Export
+        <span class="nav-num">4</span> Mapping
+      </div>
+      <div class="step-nav-sep">›</div>
+      <div class="step-nav-item disabled" id="nav-5">
+        <span class="nav-num">5</span> Export
       </div>
     </nav>
     <div class="header-right">
@@ -113,10 +117,28 @@
       </div>
     </section>
 
-    <!-- STEP 3: Mapping -->
+    <!-- STEP 3: Quelleneinstellungen -->
+    <section id="step-sources" class="step hidden">
+      <h2 class="step-title"><span class="step-num">3</span> Quelleneinstellungen</h2>
+      <p class="section-desc">
+        Definieren Sie hier die Quelle(n) für Ihre Daten. Jede Quelle besteht aus einem <strong>Quell-Objekt</strong>
+        (einmalig in der GEDCOM) und einer <strong>Zitation</strong> (individuell je Datensatz, z.B. Seitenzahl).
+        Felder können entweder als fester Wert oder aus einer Tabellenspalte befüllt werden.
+      </p>
+
+      <div id="sources-container" class="sources-container"></div>
+
+      <button id="btn-add-source" class="btn-secondary" style="margin-top:12px">+ Weitere Quelle hinzufügen</button>
+
+      <div class="step-actions">
+        <button id="btn-sources-next" class="btn-primary btn-large">Weiter zum Mapping →</button>
+      </div>
+    </section>
+
+    <!-- STEP 4: Mapping -->
     <section id="step-mapping" class="step hidden">
       <div class="mapping-toolbar">
-        <h2 class="step-title" style="margin:0"><span class="step-num">3</span> Mapping</h2>
+        <h2 class="step-title" style="margin:0"><span class="step-num">4</span> Mapping</h2>
         <div class="mapping-toolbar-right">
           <label class="preview-row-label">Vorschau-Zeile:
             <select id="preview-row-select" class="preview-row-sel"></select>
@@ -131,7 +153,6 @@
 
         <!-- Center: person/event builder -->
         <div class="mapping-center">
-          <div id="source-settings-block" class="source-settings-block"></div>
           <div id="mapping-right" class="mapping-right"></div>
           <button id="btn-add-person" class="btn-secondary" style="margin-top:12px">+ Weitere Person hinzufügen</button>
         </div>
@@ -152,6 +173,8 @@
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
   <script src="js/classifier.js"></script>
   <script src="js/parser.js"></script>
+  <script src="js/sources.js"></script>
+  <script src="js/sources-ui.js"></script>
   <script src="js/mapping.js"></script>
   <script src="js/mapping-ui.js"></script>
   <script src="js/app.js"></script>

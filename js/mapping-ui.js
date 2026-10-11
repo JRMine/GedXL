@@ -33,13 +33,11 @@ let activePersonId = null;
 function initMapping() {
   initMappingDomRefs();
   mappingPersons = [];
-  sourceSettings = { mode: 'static', title: '', archive: '', editor: '', citationColIdx: null, sheetName: '', titleColIdx: null, existingId: '' };
   const p = createPerson();
   p.label = 'Person';
   mappingPersons.push(p);
   activePersonId = p.id;
 
-  renderSourceSettings();
   renderColumnPalette();
   renderPersonList();
   renderPreview();

@@ -29,13 +29,14 @@ const navItems     = {
   2: document.getElementById('nav-2'),
   3: document.getElementById('nav-3'),
   4: document.getElementById('nav-4'),
+  5: document.getElementById('nav-5'),
 };
 
 // ---- Step / Nav helpers ----
 let currentStep = 1;
 
 function showStep(stepEl, stepNum) {
-  [stepUpload, stepSheets, stepImport, document.getElementById('step-mapping')].forEach(s => {
+  [stepUpload, stepSheets, stepImport, document.getElementById('step-sources'), document.getElementById('step-mapping')].forEach(s => {
     s.classList.remove('active');
     s.classList.add('hidden');
   });
@@ -58,14 +59,13 @@ function updateNav(activeNum) {
 
 // ---- Back button ----
 btnBack.addEventListener('click', () => {
-  if (currentStep === 3) {
+  if (currentStep === 4) {
+    showStep(document.getElementById('step-sources'), 3);
+  } else if (currentStep === 3) {
     showStep(stepImport, 2);
   } else if (currentStep === 2) {
-    if (parsedFile && parsedFile.sheetNames.length > 1) {
-      showStep(stepSheets, 1);
-    } else {
-      showStep(stepUpload, 1);
-    }
+    if (parsedFile && parsedFile.sheetNames.length > 1) showStep(stepSheets, 1);
+    else showStep(stepUpload, 1);
   } else if (currentStep === 1 && document.getElementById('step-sheets').classList.contains('active')) {
     showStep(stepUpload, 1);
   }
@@ -340,8 +340,16 @@ function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ---- Next button ----
+// ---- Next button (Import-Check → Quelleneinstellungen) ----
 btnNext.addEventListener('click', () => {
-  initMapping();
-  showStep(document.getElementById('step-mapping'), 3);
+  initSources();
+  showStep(document.getElementById('step-sources'), 3);
+});
+
+// ---- Sources → Mapping ----
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btn-sources-next')?.addEventListener('click', () => {
+    initMapping();
+    showStep(document.getElementById('step-mapping'), 4);
+  });
 });
