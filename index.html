@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GedXL — Excel/CSV zu GEDCOM</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <span class="logo">GedXL</span>
+      <span class="tagline">Excel &amp; CSV → GEDCOM Konverter</span>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <!-- STEP 1: Upload -->
+    <section id="step-upload" class="step active">
+      <h2 class="step-title"><span class="step-num">1</span> Datei hochladen</h2>
+      <div id="drop-zone" class="drop-zone">
+        <div class="drop-icon">📂</div>
+        <p>Excel- oder CSV-Datei hier ablegen</p>
+        <p class="drop-sub">oder</p>
+        <label class="btn-primary" for="file-input">Datei auswählen</label>
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden />
+      </div>
+      <p class="hint">Ihre Datei wird nur lokal im Browser verarbeitet — es werden keine Daten hochgeladen.</p>
+    </section>
+
+    <!-- STEP 1b: Sheet selection -->
+    <section id="step-sheets" class="step hidden">
+      <h2 class="step-title"><span class="step-num">1</span> Tabellenblatt auswählen</h2>
+      <div id="sheet-list" class="sheet-list"></div>
+    </section>
+
+    <!-- STEP 2: Import-Check -->
+    <section id="step-import" class="step hidden">
+      <h2 class="step-title"><span class="step-num">2</span> Import-Check</h2>
+
+      <div class="import-layout">
+
+        <!-- Left: row classification table -->
+        <div class="import-main">
+          <p class="section-desc">Überprüfen und korrigieren Sie die Zeilentypen. Zeilen die als <strong>GLOBAL_VAR</strong> markiert sind, stehen später als Platzhalter im Mapping zur Verfügung.</p>
+          <div id="row-table-wrap" class="row-table-wrap">
+            <table id="row-table" class="row-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th class="col-type">Typ</th>
+                  <th class="col-varname">Variablenname</th>
+                  <th class="col-preview">Inhalt</th>
+                </tr>
+              </thead>
+              <tbody id="row-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: summary panels -->
+        <div class="import-sidebar">
+
+          <div class="panel" id="panel-globalvars">
+            <h3>🔖 Globale Variablen</h3>
+            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier. Der Wert gilt für alle nachfolgenden Datenzeilen.</p>
+            <div id="globalvars-list" class="globalvars-list">
+              <p class="empty-hint">Noch keine globalen Variablen definiert.</p>
+            </div>
+          </div>
+
+          <div class="panel" id="panel-columns">
+            <h3>📊 Spaltenübersicht</h3>
+            <p class="panel-hint">Füllstand basiert auf DATA-Zeilen.</p>
+            <div id="columns-list" class="columns-list">
+              <p class="empty-hint">Wird nach Bestätigung der Header-Zeile angezeigt.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-actions">
+        <button id="btn-next" class="btn-primary btn-large" disabled>Weiter zum Mapping →</button>
+        <p class="hint" id="next-hint">Bitte mindestens eine Header-Zeile und Datenzeilen bestätigen.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="js/classifier.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

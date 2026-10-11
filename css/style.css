@@ -1,0 +1,251 @@
+/* =============================================
+   GedXL — Stylesheet
+   ============================================= */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  background: #f4f5f7;
+  color: #1a1a2e;
+  min-height: 100vh;
+}
+
+/* ---- Header ---- */
+.app-header {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0 24px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+}
+.header-inner { display: flex; align-items: baseline; gap: 14px; }
+.logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #7ec8e3; }
+.tagline { font-size: 13px; color: #aab; }
+
+/* ---- Main ---- */
+.app-main { max-width: 1200px; margin: 32px auto; padding: 0 24px 80px; }
+
+/* ---- Steps ---- */
+.step { display: none; }
+.step.active { display: block; }
+.step.hidden { display: none; }
+
+.step-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  background: #7ec8e3;
+  color: #1a1a2e;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ---- Drop Zone ---- */
+.drop-zone {
+  border: 2px dashed #b0b8c9;
+  border-radius: 12px;
+  background: #fff;
+  padding: 48px 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone.dragover {
+  border-color: #7ec8e3;
+  background: #eaf7fb;
+}
+.drop-icon { font-size: 48px; margin-bottom: 12px; }
+.drop-zone p { color: #555; margin-bottom: 8px; }
+.drop-sub { font-size: 12px; color: #999; }
+
+/* ---- Buttons ---- */
+.btn-primary {
+  display: inline-block;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 9px 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #2e2e50; }
+.btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+.btn-large { padding: 12px 32px; font-size: 16px; margin-top: 24px; }
+
+/* ---- Hints ---- */
+.hint { font-size: 12px; color: #888; margin-top: 10px; }
+
+/* ---- Sheet list ---- */
+.sheet-list { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+.sheet-btn {
+  background: #fff;
+  border: 2px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 14px 22px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.15s, background 0.15s;
+}
+.sheet-btn:hover { border-color: #7ec8e3; background: #eaf7fb; }
+
+/* ---- Import-Check Layout ---- */
+.import-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .import-layout { grid-template-columns: 1fr; }
+}
+
+.section-desc { color: #555; margin-bottom: 14px; line-height: 1.5; }
+
+/* ---- Row table ---- */
+.row-table-wrap {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e0e4eb;
+  overflow-x: auto;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.row-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.row-table thead {
+  position: sticky;
+  top: 0;
+  background: #1a1a2e;
+  color: #fff;
+  z-index: 2;
+}
+.row-table th {
+  padding: 9px 12px;
+  text-align: left;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.row-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid #eef0f4;
+  vertical-align: top;
+}
+.row-table tbody tr:hover { background: #f8f9fc; }
+
+.col-num { width: 44px; }
+.col-type { width: 150px; }
+.col-varname { width: 140px; }
+.col-preview { max-width: 0; }
+
+/* Row type badges */
+.type-select {
+  border: 1px solid #d0d5dd;
+  border-radius: 5px;
+  padding: 3px 6px;
+  font-size: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  width: 130px;
+}
+.type-DATA     { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+.type-HEADER   { background: #e3f2fd; color: #1565c0; border-color: #90caf9; }
+.type-SECTION  { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+.type-GLOBAL_VAR { background: #f3e5f5; color: #6a1b9a; border-color: #ce93d8; }
+.type-IGNORE   { background: #fafafa; color: #9e9e9e; border-color: #e0e0e0; }
+
+/* Row styling by type */
+tr.row-HEADER   td { background: #f0f6ff; }
+tr.row-SECTION  td { background: #fff8f0; font-weight: 600; }
+tr.row-GLOBAL_VAR td { background: #faf0ff; }
+tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
+
+.varname-input {
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 12px;
+  width: 120px;
+  font-family: monospace;
+}
+.varname-input:disabled { background: #f5f5f5; color: #bbb; }
+
+.cell-preview {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 600px;
+  display: block;
+  color: #444;
+}
+.cell-empty { color: #ccc; font-style: italic; }
+
+/* ---- Sidebar panels ---- */
+.import-sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+.panel {
+  background: #fff;
+  border: 1px solid #e0e4eb;
+  border-radius: 10px;
+  padding: 16px;
+}
+.panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.panel-hint { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.4; }
+.empty-hint { font-size: 12px; color: #bbb; font-style: italic; }
+
+/* Global vars list */
+.globalvars-list { display: flex; flex-direction: column; gap: 8px; }
+.globalvar-item {
+  background: #faf0ff;
+  border: 1px solid #ce93d8;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.globalvar-name { font-family: monospace; font-weight: 600; color: #6a1b9a; }
+.globalvar-value { color: #555; margin-top: 2px; }
+
+/* Columns list */
+.columns-list { display: flex; flex-direction: column; gap: 8px; }
+.col-item { font-size: 12px; }
+.col-item-name { font-weight: 600; color: #333; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fill-bar-wrap { display: flex; align-items: center; gap: 6px; }
+.fill-bar {
+  flex: 1;
+  height: 6px;
+  background: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.fill-bar-inner {
+  height: 100%;
+  background: #7ec8e3;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.fill-pct { font-size: 11px; color: #888; width: 32px; text-align: right; }
+.col-example { color: #aaa; font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- Step actions ---- */
+.step-actions { margin-top: 24px; }
