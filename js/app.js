@@ -347,9 +347,7 @@ btnNext.addEventListener('click', () => {
 });
 
 // ---- Sources → Mapping ----
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btn-sources-next')?.addEventListener('click', () => {
-    initMapping();
-    showStep(document.getElementById('step-mapping'), 4);
-  });
+document.getElementById('btn-sources-next').addEventListener('click', () => {
+  initMapping();
+  showStep(document.getElementById('step-mapping'), 4);
 });

@@ -1,40 +1,40 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GedXL — Excel/CSV zu GEDCOM</title>
+  <title>GedXL â€” Excel/CSV zu GEDCOM</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header class="app-header">
     <div class="header-left">
       <span class="logo">GedXL</span>
-      <span class="tagline">Excel &amp; CSV → GEDCOM Konverter</span>
+      <span class="tagline">Excel &amp; CSV â†’ GEDCOM Konverter</span>
     </div>
     <nav class="step-nav">
       <div class="step-nav-item active" id="nav-1">
         <span class="nav-num">1</span> Upload
       </div>
-      <div class="step-nav-sep">›</div>
+      <div class="step-nav-sep">â€º</div>
       <div class="step-nav-item" id="nav-2">
         <span class="nav-num">2</span> Import-Check
       </div>
-      <div class="step-nav-sep">›</div>
+      <div class="step-nav-sep">â€º</div>
       <div class="step-nav-item disabled" id="nav-3">
         <span class="nav-num">3</span> Quellen
       </div>
-      <div class="step-nav-sep">›</div>
+      <div class="step-nav-sep">â€º</div>
       <div class="step-nav-item disabled" id="nav-4">
         <span class="nav-num">4</span> Mapping
       </div>
-      <div class="step-nav-sep">›</div>
+      <div class="step-nav-sep">â€º</div>
       <div class="step-nav-item disabled" id="nav-5">
         <span class="nav-num">5</span> Export
       </div>
     </nav>
     <div class="header-right">
-      <button id="btn-back" class="btn-nav" style="display:none">← Zurück</button>
+      <button id="btn-back" class="btn-nav" style="display:none">â† ZurÃ¼ck</button>
     </div>
   </header>
 
@@ -44,19 +44,19 @@
     <section id="step-upload" class="step active">
       <h2 class="step-title"><span class="step-num">1</span> Datei hochladen</h2>
       <div id="drop-zone" class="drop-zone">
-        <div class="drop-icon">📂</div>
+        <div class="drop-icon">ðŸ“‚</div>
         <p>Excel- oder CSV-Datei hier ablegen</p>
         <p class="drop-sub">oder</p>
-        <label class="btn-primary" for="file-input">Datei auswählen</label>
+        <label class="btn-primary" for="file-input">Datei auswÃ¤hlen</label>
         <input type="file" id="file-input" accept=".xlsx,.xls,.csv" hidden />
       </div>
-      <p class="hint">Ihre Datei wird nur lokal im Browser verarbeitet — es werden keine Daten hochgeladen.</p>
+      <p class="hint">Ihre Datei wird nur lokal im Browser verarbeitet â€” es werden keine Daten hochgeladen.</p>
     </section>
 
     <!-- STEP 1b: Sheet selection -->
     <section id="step-sheets" class="step hidden">
-      <h2 class="step-title"><span class="step-num">1</span> Tabellenblatt auswählen</h2>
-      <p class="section-desc">Die Datei enthält mehrere Tabellenblätter. Bitte wählen Sie das zu verarbeitende Blatt aus.</p>
+      <h2 class="step-title"><span class="step-num">1</span> Tabellenblatt auswÃ¤hlen</h2>
+      <p class="section-desc">Die Datei enthÃ¤lt mehrere TabellenblÃ¤tter. Bitte wÃ¤hlen Sie das zu verarbeitende Blatt aus.</p>
       <div id="sheet-list" class="sheet-list"></div>
     </section>
 
@@ -68,7 +68,7 @@
 
         <!-- Left: row classification table -->
         <div class="import-main">
-          <p class="section-desc">Überprüfen und korrigieren Sie die Zeilentypen. Zeilen die als <strong>GLOBAL_VAR</strong> markiert sind, stehen später als Platzhalter im Mapping zur Verfügung.</p>
+          <p class="section-desc">ÃœberprÃ¼fen und korrigieren Sie die Zeilentypen. Zeilen die als <strong>GLOBAL_VAR</strong> markiert sind, stehen spÃ¤ter als Platzhalter im Mapping zur VerfÃ¼gung.</p>
           <div id="row-table-wrap" class="row-table-wrap">
             <table id="row-table" class="row-table">
               <thead>
@@ -88,15 +88,15 @@
         <div class="import-sidebar">
 
           <div class="panel" id="panel-globalvars">
-            <h3>🔖 Globale Variablen</h3>
-            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier. Jede belegte Spalte erhält einen eigenen Platzhalter.</p>
+            <h3>ðŸ”– Globale Variablen</h3>
+            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier. Jede belegte Spalte erhÃ¤lt einen eigenen Platzhalter.</p>
             <div id="globalvars-list" class="globalvars-list">
               <p class="empty-hint">Noch keine globalen Variablen definiert.</p>
             </div>
           </div>
 
           <div class="panel" id="panel-columns">
-            <h3>📊 Spaltenübersicht</h3>
+            <h3>ðŸ“Š SpaltenÃ¼bersicht</h3>
             <div class="panel-toolbar">
               <label class="checkbox-label">
                 <input type="checkbox" id="chk-hide-empty" />
@@ -104,7 +104,7 @@
               </label>
             </div>
             <div id="columns-list" class="columns-list">
-              <p class="empty-hint">Wird nach Bestätigung der Header-Zeile angezeigt.</p>
+              <p class="empty-hint">Wird nach BestÃ¤tigung der Header-Zeile angezeigt.</p>
             </div>
           </div>
 
@@ -112,8 +112,8 @@
       </div>
 
       <div class="step-actions">
-        <button id="btn-next" class="btn-primary btn-large" disabled>Weiter zum Mapping →</button>
-        <p class="hint" id="next-hint">Bitte mindestens eine Header-Zeile und Datenzeilen bestätigen.</p>
+        <button id="btn-next" class="btn-primary btn-large" disabled>Weiter zum Mapping â†’</button>
+        <p class="hint" id="next-hint">Bitte mindestens eine Header-Zeile und Datenzeilen bestÃ¤tigen.</p>
       </div>
     </section>
 
@@ -121,17 +121,17 @@
     <section id="step-sources" class="step hidden">
       <h2 class="step-title"><span class="step-num">3</span> Quelleneinstellungen</h2>
       <p class="section-desc">
-        Definieren Sie hier die Quelle(n) für Ihre Daten. Jede Quelle besteht aus einem <strong>Quell-Objekt</strong>
+        Definieren Sie hier die Quelle(n) fÃ¼r Ihre Daten. Jede Quelle besteht aus einem <strong>Quell-Objekt</strong>
         (einmalig in der GEDCOM) und einer <strong>Zitation</strong> (individuell je Datensatz, z.B. Seitenzahl).
-        Felder können entweder als fester Wert oder aus einer Tabellenspalte befüllt werden.
+        Felder kÃ¶nnen entweder als fester Wert oder aus einer Tabellenspalte befÃ¼llt werden.
       </p>
 
       <div id="sources-container" class="sources-container"></div>
 
-      <button id="btn-add-source" class="btn-secondary" style="margin-top:12px">+ Weitere Quelle hinzufügen</button>
+      <button id="btn-add-source" class="btn-secondary" style="margin-top:12px">+ Weitere Quelle hinzufÃ¼gen</button>
 
       <div class="step-actions">
-        <button id="btn-sources-next" class="btn-primary btn-large">Weiter zum Mapping →</button>
+        <button id="btn-sources-next" class="btn-primary btn-large">Weiter zum Mapping â†’</button>
       </div>
     </section>
 
@@ -143,7 +143,7 @@
           <label class="preview-row-label">Vorschau-Zeile:
             <select id="preview-row-select" class="preview-row-sel"></select>
           </label>
-          <button id="btn-to-export" class="btn-primary">Weiter zum Export →</button>
+          <button id="btn-to-export" class="btn-primary">Weiter zum Export â†’</button>
         </div>
       </div>
 
@@ -157,14 +157,14 @@
         <!-- Col 3: Person/Event builder -->
         <div class="mapping-center">
           <div id="mapping-right" class="mapping-right"></div>
-          <button id="btn-add-person" class="btn-secondary" style="margin-top:12px">+ Weitere Person hinzufügen</button>
+          <button id="btn-add-person" class="btn-secondary" style="margin-top:12px">+ Weitere Person hinzufÃ¼gen</button>
         </div>
 
         <!-- Col 4: Preview -->
         <div class="mapping-preview-col">
           <div class="panel">
-            <h3>👁 Vorschau</h3>
-            <p class="panel-hint">So sieht der ausgewählte Datensatz nach dem Mapping aus.</p>
+            <h3>ðŸ‘ Vorschau</h3>
+            <p class="panel-hint">So sieht der ausgewÃ¤hlte Datensatz nach dem Mapping aus.</p>
             <div id="preview-card"></div>
           </div>
         </div>
