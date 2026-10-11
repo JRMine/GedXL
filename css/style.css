@@ -26,7 +26,7 @@ body {
 .tagline { font-size: 13px; color: #aab; }
 
 /* ---- Main ---- */
-.app-main { max-width: 1200px; margin: 32px auto; padding: 0 24px 80px; }
+.app-main { max-width: 100%; margin: 24px 0; padding: 0 16px 80px; }
 
 /* ---- Steps ---- */
 .step { display: none; }
@@ -110,8 +110,8 @@ body {
 /* ---- Import-Check Layout ---- */
 .import-layout {
   display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 20px;
+  grid-template-columns: 1fr 260px;
+  gap: 16px;
   align-items: start;
 }
 @media (max-width: 900px) {
@@ -126,7 +126,7 @@ body {
   border-radius: 10px;
   border: 1px solid #e0e4eb;
   overflow-x: auto;
-  max-height: 60vh;
+  max-height: 75vh;
   overflow-y: auto;
 }
 .row-table {
@@ -195,7 +195,7 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 600px;
+  max-width: 900px;
   display: block;
   color: #444;
 }
