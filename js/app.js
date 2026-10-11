@@ -172,16 +172,13 @@ function proceedFromUpload() {
       sel.className = 'sheet-role-sel';
       sel.dataset.sheet = name;
       [
-        { value: 'data',   label: 'Personendaten (zusammenfuehren)' },
-        { value: 'source', label: 'Quellendaten (separates Blatt)' },
+        { value: 'data',   label: 'Importieren (Zeilen zusammenfuehren)' },
         { value: 'ignore', label: 'Ignorieren' },
       ].forEach(opt => {
         const o = document.createElement('option');
         o.value = opt.value;
         o.textContent = opt.label;
-        // Heuristik: erstes Blatt = Personendaten, danach Quellendaten als Vorschlag
-        if (idx === 0) o.selected = opt.value === 'data';
-        else o.selected = opt.value === 'source';
+        o.selected = opt.value === 'data'; // alle standardmaessig importieren
         sel.appendChild(o);
       });
 
@@ -227,11 +224,7 @@ function loadSheets(roleMap) {
       if (last.every(c => c === null || c === undefined || String(c).trim() === '')) rows.pop();
       else break;
     }
-    if (role === 'source') {
-      sourceSheets[name] = rows;
-    } else {
-      sheetImportQueue.push({ name, role, rows });
-    }
+    sheetImportQueue.push({ name, role, rows });
   });
 
   if (sheetImportQueue.length === 0) {
@@ -242,7 +235,6 @@ function loadSheets(roleMap) {
 }
 
 function loadNextSheetForCheck() {
-  console.log('[GedXL] loadNextSheetForCheck, queue:', sheetImportQueue.map(s=>s.name), 'done:', sheetImportDone.map(s=>s.name));
   if (sheetImportQueue.length === 0) {
     finalizeMerge();
     return;
