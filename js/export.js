@@ -378,13 +378,16 @@ function validateBeforeExport() {
     if (!hasName) warnings.push({ level: 'warn', msg: person.label + ': Kein Namensfeld (GIVN/SURN) zugeordnet.' });
 
     // SEX-Warnung nur wenn Person als Elternteil oder Partner vorkommt
-    // (bei "Kind" oder "Geschwister" ist das Geschlecht fuer die FAM-Zuweisung irrelevant)
+    // Direkt: Person selbst hat Rolle Vater/Mutter/Partner
+    // Indirekt: eine andere Person sagt "ich bin Kind/Geschwister von dieser Person"
+    //           → diese Person ist implizit Elternteil
     const PARENT_PARTNER_ROLES = ['Vater', 'Mutter', 'Partner'];
-    const isParentOrPartner =
-      person.relatives.some(r => PARENT_PARTNER_ROLES.includes(r.role)) ||
-      mappingPersons.some(other => other.relatives.some(r =>
-        r.targetPersonId === person.id && ['Kind', 'Geschwister'].indexOf(r.role) === -1
-      ));
+    const isDirectParentOrPartner = person.relatives.some(r => PARENT_PARTNER_ROLES.includes(r.role));
+    const isImpliedParent = mappingPersons.some(other =>
+      other.id !== person.id &&
+      other.relatives.some(r => r.targetPersonId === person.id && r.role === 'Kind')
+    );
+    const isParentOrPartner = isDirectParentOrPartner || isImpliedParent;
     const hasSex = person.fields.some(f => f.path === 'SEX');
     if (isParentOrPartner && !hasSex) {
       warnings.push({ level: 'warn', msg: person.label + ': Hat FAM-Beziehungen, aber kein Geschlechtsfeld (SEX) zugeordnet. HUSB/WIFE-Zuweisung im FAM-Record koennte falsch sein. Mutter- und Vater-Beziehungen koennen nur durch Angabe eines Geschlechts korrekt zugeordnet werden.' });
