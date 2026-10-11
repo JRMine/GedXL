@@ -81,6 +81,48 @@ function resolveField(field, dataRow, gvars) {
   return previewFieldValue(field, dataRow, gvars) || null;
 }
 
+// ---- Zitationen fuer eine Person oder ein Ereignis ausgeben ----
+// citations: [{id, sourceId, overrides:{}}]
+// attachType: 'person' oder 'events'
+// Gibt GEDCOM-Zeilen ab Level 1 zurueck (fuer Events: Aufrufer erhoeht um 1)
+function collectCitations(citations, attachType, row, gvars) {
+  const result = [];
+  if (!citations || citations.length === 0) return result;
+  citations.forEach(cit => {
+    const src = sourceDefs.find(s => s.id === cit.sourceId);
+    if (!src) return;
+    if (src.mode === 'existing') {
+      // Vorhandene Quell-ID direkt referenzieren
+      result.push('1 SOUR ' + (src.existingId || ''));
+      return;
+    }
+    if (!src._gedId) return; // Quelle noch nicht exportiert
+    result.push('1 SOUR ' + src._gedId);
+    // Overrides (z.B. PAGE aus Spalte)
+    if (cit.overrides) {
+      Object.entries(cit.overrides).forEach(([tag, fieldDef]) => {
+        const v = resolveField(fieldDef, row, gvars);
+        if (v) result.push('2 ' + tag + ' ' + v);
+      });
+    }
+  });
+
+  // Auto-attach: Quellen die per attachTo automatisch haengen
+  sourceDefs.forEach(src => {
+    if (src.mode === 'existing') return;
+    if (!src._gedId) return;
+    const shouldAttach = attachType === 'person'
+      ? src.attachTo?.person
+      : src.attachTo?.events;
+    if (!shouldAttach) return;
+    // Nicht doppelt hinzufuegen wenn schon manuell zitiert
+    if (citations.some(c => c.sourceId === src.id)) return;
+    result.push('1 SOUR ' + src._gedId);
+  });
+
+  return result;
+}
+
 // ---- Datum normalisieren ----
 function normalizeDate(raw, isV7) {
   if (!raw) return null;
