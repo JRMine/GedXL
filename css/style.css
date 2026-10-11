@@ -16,14 +16,73 @@ body {
 .app-header {
   background: #1a1a2e;
   color: #fff;
-  padding: 0 24px;
+  padding: 0 20px;
   height: 54px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
-.header-inner { display: flex; align-items: baseline; gap: 14px; }
+.header-left { display: flex; align-items: baseline; gap: 12px; flex-shrink: 0; }
 .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #7ec8e3; }
 .tagline { font-size: 13px; color: #aab; }
+.header-right { flex-shrink: 0; }
+
+/* ---- Step navigation ---- */
+.step-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
+}
+.step-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #aab;
+  cursor: default;
+  transition: background 0.15s;
+}
+.step-nav-item.active {
+  background: rgba(126,200,227,0.18);
+  color: #7ec8e3;
+}
+.step-nav-item.done {
+  color: #7ec8e3;
+  cursor: pointer;
+}
+.step-nav-item.done:hover { background: rgba(126,200,227,0.1); }
+.step-nav-item.disabled { color: #555; }
+.nav-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; height: 20px;
+  background: currentColor;
+  color: #1a1a2e;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+.step-nav-sep { color: #444; font-size: 14px; }
+
+/* ---- Back button ---- */
+.btn-nav {
+  background: transparent;
+  border: 1px solid #444;
+  color: #aab;
+  padding: 5px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-nav:hover { border-color: #7ec8e3; color: #7ec8e3; }
 
 /* ---- Main ---- */
 .app-main { max-width: 100%; margin: 24px 0; padding: 0 16px 80px; }
@@ -181,15 +240,23 @@ tr.row-SECTION  td { background: #fff8f0; font-weight: 600; }
 tr.row-GLOBAL_VAR td { background: #faf0ff; }
 tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 
+.td-varnames { display: flex; flex-direction: column; gap: 4px; }
+.varname-wrap { display: flex; align-items: center; gap: 4px; }
+.varname-col-lbl { font-size: 10px; color: #999; white-space: nowrap; max-width: 70px; overflow: hidden; text-overflow: ellipsis; }
 .varname-input {
   border: 1px solid #d0d5dd;
   border-radius: 4px;
   padding: 3px 7px;
   font-size: 12px;
-  width: 120px;
+  width: 110px;
   font-family: monospace;
 }
 .varname-input:disabled { background: #f5f5f5; color: #bbb; }
+
+/* Column ignore controls */
+.col-item-header { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; margin-bottom: 3px; }
+.col-ignore-label { display: flex; align-items: center; gap: 3px; font-size: 10px; color: #aaa; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+.col-ignore-label input { cursor: pointer; }
 
 .cell-preview {
   white-space: nowrap;
@@ -212,6 +279,9 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 }
 .panel h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 .panel-hint { font-size: 12px; color: #888; margin-bottom: 12px; line-height: 1.4; }
+.panel-toolbar { margin-bottom: 10px; }
+.checkbox-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; cursor: pointer; }
+.checkbox-label input { cursor: pointer; }
 .empty-hint { font-size: 12px; color: #bbb; font-style: italic; }
 
 /* Global vars list */

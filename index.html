@@ -8,9 +8,29 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="header-inner">
+    <div class="header-left">
       <span class="logo">GedXL</span>
       <span class="tagline">Excel &amp; CSV → GEDCOM Konverter</span>
+    </div>
+    <nav class="step-nav">
+      <div class="step-nav-item active" id="nav-1">
+        <span class="nav-num">1</span> Upload
+      </div>
+      <div class="step-nav-sep">›</div>
+      <div class="step-nav-item" id="nav-2">
+        <span class="nav-num">2</span> Import-Check
+      </div>
+      <div class="step-nav-sep">›</div>
+      <div class="step-nav-item disabled" id="nav-3">
+        <span class="nav-num">3</span> Mapping
+      </div>
+      <div class="step-nav-sep">›</div>
+      <div class="step-nav-item disabled" id="nav-4">
+        <span class="nav-num">4</span> Export
+      </div>
+    </nav>
+    <div class="header-right">
+      <button id="btn-back" class="btn-nav" style="display:none">← Zurück</button>
     </div>
   </header>
 
@@ -32,6 +52,7 @@
     <!-- STEP 1b: Sheet selection -->
     <section id="step-sheets" class="step hidden">
       <h2 class="step-title"><span class="step-num">1</span> Tabellenblatt auswählen</h2>
+      <p class="section-desc">Die Datei enthält mehrere Tabellenblätter. Bitte wählen Sie das zu verarbeitende Blatt aus.</p>
       <div id="sheet-list" class="sheet-list"></div>
     </section>
 
@@ -50,7 +71,7 @@
                 <tr>
                   <th class="col-num">#</th>
                   <th class="col-type">Typ</th>
-                  <th class="col-varname">Variablenname</th>
+                  <th class="col-varname">Variablenname(n)</th>
                   <th class="col-preview">Inhalt</th>
                 </tr>
               </thead>
@@ -64,7 +85,7 @@
 
           <div class="panel" id="panel-globalvars">
             <h3>🔖 Globale Variablen</h3>
-            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier. Der Wert gilt für alle nachfolgenden Datenzeilen.</p>
+            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier. Jede belegte Spalte erhält einen eigenen Platzhalter.</p>
             <div id="globalvars-list" class="globalvars-list">
               <p class="empty-hint">Noch keine globalen Variablen definiert.</p>
             </div>
@@ -72,7 +93,12 @@
 
           <div class="panel" id="panel-columns">
             <h3>📊 Spaltenübersicht</h3>
-            <p class="panel-hint">Füllstand basiert auf DATA-Zeilen.</p>
+            <div class="panel-toolbar">
+              <label class="checkbox-label">
+                <input type="checkbox" id="chk-hide-empty" />
+                Leere Spalten (0%) ignorieren
+              </label>
+            </div>
             <div id="columns-list" class="columns-list">
               <p class="empty-hint">Wird nach Bestätigung der Header-Zeile angezeigt.</p>
             </div>
