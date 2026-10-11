@@ -68,10 +68,8 @@ function updateNav(activeNum) {
 }
 
 // ---- Startseite ----
-['btn-start', 'btn-start2'].forEach(id => {
-  const btn = document.getElementById(id);
-  if (btn) btn.addEventListener('click', () => showStep(stepUpload, 1));
-});
+const btnStartMain = document.getElementById('btn-start');
+if (btnStartMain) btnStartMain.addEventListener('click', () => showStep(stepUpload, 1));
 
 // ---- Back button ----
 btnBack.addEventListener('click', () => {
