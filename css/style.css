@@ -536,19 +536,16 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 }
 .btn-secondary:hover { border-color: #7ec8e3; color: #1a1a2e; }
 .btn-small { padding: 4px 10px; font-size: 12px; }
-.add-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
+.add-dropdown-portal {
+  position: fixed;
   background: #fff;
   border: 1px solid #e0e4eb;
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.15);
   min-width: 240px;
   max-height: 280px;
   overflow-y: auto;
-  z-index: 100;
-  margin-top: 4px;
+  z-index: 9999;
 }
 .add-dropdown.hidden { display: none; }
 .add-dropdown-item {
