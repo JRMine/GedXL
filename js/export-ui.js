@@ -103,6 +103,7 @@ function initExport() {
   // ---- Export button ----
   const btnDiv = document.createElement('div');
   btnDiv.className = 'export-btn-row';
+
   const exportBtn = document.createElement('button');
   exportBtn.className = 'btn-primary btn-large';
   exportBtn.textContent = 'GEDCOM herunterladen';
@@ -134,6 +135,16 @@ function initExport() {
     }
   });
   btnDiv.appendChild(previewBtn);
+
+  const saveProfileBtn = document.createElement('button');
+  saveProfileBtn.className = 'btn-secondary btn-large';
+  saveProfileBtn.textContent = '&#128190; Mapping-Profil speichern';
+  saveProfileBtn.style.marginLeft = '10px';
+  saveProfileBtn.addEventListener('click', () => {
+    saveProfile();
+  });
+  btnDiv.appendChild(saveProfileBtn);
+
   container.appendChild(btnDiv);
 }
 
