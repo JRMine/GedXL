@@ -981,3 +981,22 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .sheet-actions {
   display: flex; align-items: center; gap: 8px; margin-top: 4px;
 }
+
+/* ---- Sheet role selection ---- */
+.sheet-role-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 14px; border-radius: 6px;
+  background: #f8f9fa; border: 1px solid #e0e4eb; margin-bottom: 6px;
+}
+.sheet-role-name { font-size: 13px; font-weight: 600; width: 160px; flex-shrink: 0; }
+.sheet-role-sel {
+  border: 1px solid #dde1ea; border-radius: 6px; padding: 5px 10px;
+  font-size: 12px; flex-shrink: 0;
+}
+.sheet-role-sel option[value="data"]   { color: #166534; }
+.sheet-role-sel option[value="source"] { color: #1e40af; }
+.sheet-role-sel option[value="ignore"] { color: #6b7280; }
+.sheet-role-preview {
+  font-size: 11px; color: #9ca3af; font-style: italic; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; flex: 1;
+}

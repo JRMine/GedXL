@@ -131,46 +131,74 @@ async function handleFile(file) {
   }
 }
 
+let sourceSheets = {}; // { sheetName: rows[][] } — Quellen-Blaetter
+
 function proceedFromUpload() {
   if (!parsedFile) return;
   if (parsedFile.sheetNames.length === 1) {
-    loadSheets([parsedFile.sheetNames[0]]);
+    loadSheets({ [parsedFile.sheetNames[0]]: 'data' });
   } else {
     sheetList.innerHTML = '';
-    parsedFile.sheetNames.forEach(name => {
-      const label = document.createElement('label');
-      label.className = 'sheet-checkbox-label';
-      const cb = document.createElement('input');
-      cb.type = 'checkbox';
-      cb.value = name;
-      cb.className = 'sheet-checkbox';
-      cb.checked = true; // alle vorausgewaehlt
-      label.appendChild(cb);
-      label.appendChild(document.createTextNode(' ' + name));
-      sheetList.appendChild(label);
+    parsedFile.sheetNames.forEach((name, idx) => {
+      const row = document.createElement('div');
+      row.className = 'sheet-role-row';
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'sheet-role-name';
+      nameEl.textContent = name;
+
+      const sel = document.createElement('select');
+      sel.className = 'sheet-role-sel';
+      sel.dataset.sheet = name;
+      [
+        { value: 'data',   label: 'Personendaten (zusammenfuehren)' },
+        { value: 'source', label: 'Quellendaten (separates Blatt)' },
+        { value: 'ignore', label: 'Ignorieren' },
+      ].forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.value;
+        o.textContent = opt.label;
+        // Heuristik: erstes Blatt = Personendaten, danach Quellendaten als Vorschlag
+        if (idx === 0) o.selected = opt.value === 'data';
+        else o.selected = opt.value === 'source';
+        sel.appendChild(o);
+      });
+
+      // Mini-Vorschau: erste 2 Header-Spalten
+      const preview = document.createElement('span');
+      preview.className = 'sheet-role-preview';
+      try {
+        const rows = parsedFile.getSheet(name);
+        const first = rows[0] || [];
+        preview.textContent = first.filter(Boolean).slice(0, 3).join(', ') || '';
+      } catch(e) {}
+
+      row.appendChild(nameEl);
+      row.appendChild(sel);
+      row.appendChild(preview);
+      sheetList.appendChild(row);
     });
     showStep(stepSheets, 1);
   }
 }
 
-document.getElementById('btn-sheets-all').addEventListener('click', () => {
-  sheetList.querySelectorAll('.sheet-checkbox').forEach(cb => cb.checked = true);
-});
-document.getElementById('btn-sheets-none').addEventListener('click', () => {
-  sheetList.querySelectorAll('.sheet-checkbox').forEach(cb => cb.checked = false);
-});
 document.getElementById('btn-sheets-next').addEventListener('click', () => {
-  const selected = [...sheetList.querySelectorAll('.sheet-checkbox:checked')].map(cb => cb.value);
-  if (selected.length === 0) { alert('Bitte mindestens ein Tabellenblatt auswaehlen.'); return; }
-  loadSheets(selected);
+  const roleMap = {};
+  sheetList.querySelectorAll('.sheet-role-sel').forEach(sel => {
+    roleMap[sel.dataset.sheet] = sel.value;
+  });
+  const hasData = Object.values(roleMap).some(r => r === 'data');
+  if (!hasData) { alert('Bitte mindestens ein Blatt als Personendaten auswaehlen.'); return; }
+  loadSheets(roleMap);
 });
 
-// ---- Load one or more sheets (merged) ----
-function loadSheets(sheetNames) {
-  // Merge rows from all selected sheets
-  // Header comes from first sheet only; subsequent sheets: skip HEADER rows, append DATA rows
+// ---- Load sheets by role ----
+function loadSheets(roleMap) {
+  sourceSheets = {};
   let mergedRows = [];
-  sheetNames.forEach((name, idx) => {
+
+  Object.entries(roleMap).forEach(([name, role]) => {
+    if (role === 'ignore') return;
     let rows = parsedFile.getSheet(name);
     // Strip trailing empty rows
     while (rows.length > 0) {
@@ -178,16 +206,21 @@ function loadSheets(sheetNames) {
       if (last.every(c => c === null || c === undefined || String(c).trim() === '')) rows.pop();
       else break;
     }
-    if (idx === 0) {
-      mergedRows = rows;
+    if (role === 'source') {
+      sourceSheets[name] = rows;
     } else {
-      // Skip header row(s) of subsequent sheets
-      const tempCls = classifyAllRows(rows);
-      rows.forEach((row, i) => {
-        if (tempCls[i]?.type !== 'HEADER') mergedRows.push(row);
-      });
+      // data: merge, skip header rows of subsequent sheets
+      if (mergedRows.length === 0) {
+        mergedRows = rows;
+      } else {
+        const tempCls = classifyAllRows(rows);
+        rows.forEach((row, i) => {
+          if (tempCls[i]?.type !== 'HEADER') mergedRows.push(row);
+        });
+      }
     }
   });
+
   currentRows = mergedRows;
   classifications = classifyAllRows(currentRows);
   varCounter = 1;
