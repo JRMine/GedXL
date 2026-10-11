@@ -89,6 +89,15 @@ fileInput.addEventListener('change', () => {
   if (fileInput.files[0]) handleFile(fileInput.files[0]);
 });
 
+document.getElementById('btn-upload-next').addEventListener('click', () => proceedFromUpload());
+document.getElementById('btn-upload-clear').addEventListener('click', () => {
+  parsedFile = null;
+  uploadedFileName = '';
+  fileInput.value = '';
+  document.getElementById('upload-selected').classList.add('hidden');
+  dropZone.classList.remove('hidden');
+});
+
 // ---- Profil-Upload im Upload-Schritt ----
 document.getElementById('profile-load-input-upload').addEventListener('change', async e => {
   const file = e.target.files[0];
@@ -109,24 +118,33 @@ document.getElementById('profile-load-input-upload').addEventListener('change', 
 
 // ---- File handling ----
 async function handleFile(file) {
-  uploadedFileName = file.name.replace(/\.[^.]+$/, ''); // ohne Extension
+  uploadedFileName = file.name.replace(/\.[^.]+$/, '');
   try {
     parsedFile = await parseFile(file);
-    if (parsedFile.sheetNames.length === 1) {
-      loadSheet(parsedFile.sheetNames[0]);
-    } else {
-      sheetList.innerHTML = '';
-      parsedFile.sheetNames.forEach(name => {
-        const btn = document.createElement('button');
-        btn.className = 'sheet-btn';
-        btn.textContent = name;
-        btn.addEventListener('click', () => loadSheet(name));
-        sheetList.appendChild(btn);
-      });
-      showStep(stepSheets, 1);
-    }
-  } catch (err) {
-    alert('Fehler: ' + err.message);
+    // Dateiname anzeigen, Weiter-Button einblenden
+    document.getElementById('upload-selected-name').textContent = '&#128196; ' + file.name;
+    document.getElementById('upload-selected-name').innerHTML = '&#128196; ' + file.name;
+    document.getElementById('upload-selected').classList.remove('hidden');
+    dropZone.classList.add('hidden');
+  } catch (e) {
+    alert('Fehler beim Lesen der Datei: ' + e.message);
+  }
+}
+
+function proceedFromUpload() {
+  if (!parsedFile) return;
+  if (parsedFile.sheetNames.length === 1) {
+    loadSheet(parsedFile.sheetNames[0]);
+  } else {
+    sheetList.innerHTML = '';
+    parsedFile.sheetNames.forEach(name => {
+      const btn = document.createElement('button');
+      btn.className = 'sheet-btn';
+      btn.textContent = name;
+      btn.addEventListener('click', () => loadSheet(name));
+      sheetList.appendChild(btn);
+    });
+    showStep(stepSheets, 1);
   }
 }
 
