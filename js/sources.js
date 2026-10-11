@@ -2,49 +2,46 @@
  * sources.js — Quelleneinstellungen State & Logik
  */
 
-// ---- Available GEDCOM source fields (for "+" button) ----
 const AVAILABLE_SOURCE_FIELDS = [
   { tag: 'TITL', label: 'Titel / Bezeichnung' },
   { tag: 'AUTH', label: 'Autor / Bearbeiter' },
   { tag: 'REPO', label: 'Archiv / Fundstelle' },
   { tag: 'PUBL', label: 'URL / Publikationsangabe' },
-  { tag: 'ABBR', label: 'Abkürzung' },
+  { tag: 'ABBR', label: 'Abkuerzung' },
   { tag: 'TEXT', label: 'Textauszug' },
   { tag: 'NOTE', label: 'Notiz zur Quelle' },
-  { tag: 'CHAN', label: 'Änderungsdatum' },
 ];
 
 const AVAILABLE_CITATION_FIELDS = [
   { tag: 'PAGE', label: 'Seite / Fundstelle' },
   { tag: 'DATA', label: 'Transkription / Zitat' },
   { tag: 'NOTE', label: 'Notiz zur Zitation' },
-  { tag: 'QUAY', label: 'Qualitätsbewertung (0-3)' },
+  { tag: 'QUAY', label: 'Qualitaetsbewertung (0-3)' },
   { tag: 'EVEN', label: 'Ereignisbezug' },
   { tag: 'DATE', label: 'Datum der Abschrift' },
 ];
 
-// ---- Source Modes ----
 const SOURCE_MODES = [
-  {
-    value: 'new',
-    label: '✏️ Neue Quelle erstellen',
-    desc: 'Quellenfelder als feste Werte oder aus Tabellenspalten — Quelle wird in GEDCOM neu angelegt',
-  },
-  {
-    value: 'existing',
-    label: '🔗 Vorhandene ID',
-    desc: 'Verweis auf eine bereits in der Ziel-GEDCOM vorhandene Quelle (@S1@ etc.)',
-  },
+  { value: 'new',      label: 'Neue Quelle erstellen',  desc: 'Quellenfelder frei befuellbar — Quelle wird in GEDCOM neu angelegt' },
+  { value: 'existing', label: 'Vorhandene ID verwenden', desc: 'Verweis auf bereits vorhandene GEDCOM-Quelle (@S1@ etc.)' },
 ];
 
-// ---- Source State ----
 let sourceDefs = [];
 let sourceIdCounter = 0;
 
 function newSourceId() { return 'src_' + (++sourceIdCounter); }
 
-function createSourceFieldDef(tag, label, valueType = 'static') {
-  return { id: newSourceId(), tag, label, valueType, value: '', colIdx: null };
+/**
+ * Erstellt ein Quellenfeld mit sources-Array (wie Mapping-Felder).
+ * sources: [{id, type:'col'|'static'|'var', colIdx?, value?, varName?, label}]
+ */
+function createSourceFieldDef(tag, label, defaultSources) {
+  return {
+    id: newSourceId(),
+    tag,
+    label,
+    sources: defaultSources || [],
+  };
 }
 
 function createSourceDef() {
@@ -52,38 +49,46 @@ function createSourceDef() {
     id: newSourceId(),
     name: 'Quelle 1',
     mode: 'new',
-
     sourceFields: [
-      createSourceFieldDef('TITL', 'Titel / Bezeichnung', 'static'),
-      createSourceFieldDef('AUTH', 'Autor / Bearbeiter',  'static'),
-      createSourceFieldDef('REPO', 'Archiv / Fundstelle', 'static'),
-      createSourceFieldDef('PUBL', 'URL / Publikationsangabe', 'static'),
+      createSourceFieldDef('TITL', 'Titel / Bezeichnung'),
+      createSourceFieldDef('AUTH', 'Autor / Bearbeiter'),
+      createSourceFieldDef('REPO', 'Archiv / Fundstelle'),
+      createSourceFieldDef('PUBL', 'URL / Publikationsangabe'),
     ],
-
     citationFields: [
-      createSourceFieldDef('PAGE', 'Seite / Fundstelle', 'col'),
-      createSourceFieldDef('DATA', 'Transkription / Zitat', 'col'),
+      createSourceFieldDef('PAGE', 'Seite / Fundstelle'),
+      createSourceFieldDef('DATA', 'Transkription / Zitat'),
     ],
-
     existingId: '',
     attachTo: { person: true, events: true },
   };
 }
 
-function applyModeDefaults(src) {
-  // 'new' — no changes, user controls each field individually
-  // 'existing' — sourceFields irrelevant, citationFields stay
+/**
+ * Berechnet den Vorschauwert eines Quellenfeldes fuer eine Datenzeile.
+ * Nutzt dieselbe Logik wie previewFieldValue() im Mapping.
+ */
+function previewSourceField(field, dataRow) {
+  if (!field.sources || field.sources.length === 0) return null;
+  const gvars = (typeof collectGlobalVars === 'function') ? collectGlobalVars() : {};
+  const parts = field.sources.map(s => {
+    if (s.type === 'col' && s.colIdx !== null && s.colIdx !== undefined) {
+      const v = dataRow ? dataRow[s.colIdx] : null;
+      return v !== null && v !== undefined && String(v).trim() !== '' ? String(v).trim() : '';
+    }
+    if (s.type === 'static') return s.value || '';
+    if (s.type === 'var' && s.varName) return gvars[s.varName] || '';
+    return '';
+  });
+  const result = parts.filter(p => p !== '').join(' ');
+  return result || null;
 }
 
-function previewSourceField(field, dataRow) {
-  if (field.valueType === 'static') return field.value || null;
-  if (field.valueType === 'col' && field.colIdx !== null) {
-    const v = dataRow[field.colIdx];
-    return v !== null && v !== undefined && String(v).trim() !== '' ? String(v).trim() : null;
-  }
-  if (field.valueType === 'var' && field.varName) {
-    const gvars = (typeof collectGlobalVars === 'function') ? collectGlobalVars() : {};
-    return gvars[field.varName] || null;
-  }
-  return null;
+function addSourceToSrcField(field, source) {
+  if (source.type === 'col' && field.sources.some(s => s.type === 'col' && s.colIdx === source.colIdx)) return;
+  field.sources.push({ ...source, id: newSourceId() });
+}
+
+function removeSourceFromSrcField(field, sourceId) {
+  field.sources = field.sources.filter(s => s.id !== sourceId);
 }

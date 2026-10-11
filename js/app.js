@@ -576,10 +576,7 @@ function checkNextButton() {
   updateNextButtonLabel();
 }
 
-// ---- Utility ----
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+// escHtml -> ui-utils.js
 
 // ---- Next button (Import-Check → naechstes Blatt oder Quelleneinstellungen) ----
 btnNext.addEventListener('click', () => {
