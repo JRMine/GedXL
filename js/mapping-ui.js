@@ -2,21 +2,37 @@
  * mapping-ui.js — Mapping Dashboard UI
  */
 
-// ---- DOM Refs (Mapping) ----
-const stepMapping = document.getElementById('step-mapping');
-const mappingLeft = document.getElementById('mapping-left');
-const mappingRight = document.getElementById('mapping-right');
-const previewCard = document.getElementById('preview-card');
-const btnAddPerson = document.getElementById('btn-add-person');
-const previewRowSelect = document.getElementById('preview-row-select');
+// ---- DOM Refs (Mapping) — geladen lazy da erst bei Schritt 3 im DOM ----
+let mappingLeft, mappingRight, previewCard, btnAddPerson, previewRowSelect;
+
+function initMappingDomRefs() {
+  mappingLeft       = document.getElementById('mapping-left');
+  mappingRight      = document.getElementById('mapping-right');
+  previewCard       = document.getElementById('preview-card');
+  btnAddPerson      = document.getElementById('btn-add-person');
+  previewRowSelect  = document.getElementById('preview-row-select');
+
+  btnAddPerson.addEventListener('click', () => {
+    const p = createPerson();
+    p.label = `Person ${mappingPersons.length + 1}`;
+    mappingPersons.push(p);
+    activePersonId = p.id;
+    renderPersonList();
+    renderPreview();
+  });
+
+  document.getElementById('btn-to-export')?.addEventListener('click', () => {
+    alert('Schritt 4 (Export) ist noch in Entwicklung.');
+  });
+}
 
 let dragSourceData = null; // { colIdx, label } — currently dragged column
 let activePersonId = null;
 
 // ---- Init mapping step ----
 function initMapping() {
+  initMappingDomRefs();
   mappingPersons = [];
-  // Create default person
   const p = createPerson();
   p.label = 'Person';
   mappingPersons.push(p);
@@ -225,7 +241,6 @@ function renderPersonList() {
     mappingRight.appendChild(card);
   });
 
-  // Add person button
   mappingRight.appendChild(btnAddPerson);
 }
 
