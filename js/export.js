@@ -5,6 +5,13 @@
  * Produces: a .ged file string and triggers browser download
  */
 
+// Sammelt Datum-Eintraege die beim Export geparst/nicht erkannt wurden
+let dateReport = [];
+
+function addDateReport(personName, rowNum, eventLabel, original, gedcom, note, unrecognized) {
+  dateReport.push({ personName, rowNum, eventLabel, original, gedcom, note, unrecognized });
+}
+
 // ---- GEDCOM line builder ----
 function gedLine(level, tag, value) {
   if (value === null || value === undefined || String(value).trim() === '') return null;
@@ -17,19 +24,20 @@ function resolveField(field, dataRow, gvars) {
 }
 
 // ---- Normalize a date string to GEDCOM date format ----
+// Gibt { gedcom, note, unrecognized } zurueck
 function normalizeDate(raw) {
   if (!raw) return null;
   const s = String(raw).trim();
   if (s === '') return null;
 
-  // Already a GEDCOM date (e.g. "15 JAN 1702", "ABT 1740", "BET … AND …")
-  if (/^(?:ABT|AFT|BEF|BET|CAL|EST|FROM|TO|INT)?\s*\d/.test(s) && /[A-Z]{3}/.test(s)) return s;
-  if (/^\d{1,2}\s+[A-Z]{3}\s+\d{4}$/.test(s)) return s;
+  // Already a GEDCOM date
+  if (/^(?:ABT|AFT|BEF|BET|CAL|EST|FROM|TO|INT)?\s*\d/.test(s) && /[A-Z]{3}/.test(s)) return { gedcom: s, note: null, unrecognized: false };
+  if (/^\d{1,2}\s+[A-Z]{3}\s+\d{4}$/.test(s)) return { gedcom: s, note: null, unrecognized: false };
 
-  // Historischen Parser zuerst versuchen
+  // Historischen Parser versuchen
   if (typeof parseHistoricalDate === 'function') {
     const parsed = parseHistoricalDate(s);
-    if (parsed) return parsed.gedcom + (parsed.note ? '||NOTE:' + parsed.note : '');
+    if (parsed) return { gedcom: parsed.gedcom, note: parsed.note, unrecognized: false };
   }
 
   // ISO YYYY-MM-DD
@@ -37,11 +45,23 @@ function normalizeDate(raw) {
   if (iso) {
     const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
     const m = parseInt(iso[2]) - 1;
-    if (m >= 0 && m < 12) return iso[3] + ' ' + months[m] + ' ' + iso[1];
+    if (m >= 0 && m < 12) return { gedcom: iso[3] + ' ' + months[m] + ' ' + iso[1], note: null, unrecognized: false };
   }
 
-  // Nicht erkannt — als NOTE
-  return '__RAW__' + s;
+  // Nicht erkannt
+  return { gedcom: null, note: 'Originalwert: ' + s, unrecognized: true };
+}
+
+// ---- Personenname aus Zeile ermitteln (fuer Report) ----
+function resolvePersonName(person, row, gvars) {
+  const givnF = person.fields.find(f => f.path === 'NAME.GIVN');
+  const surnF = person.fields.find(f => f.path === 'NAME.SURN');
+  const givn = givnF ? resolveField(givnF, row, gvars) : null;
+  const surn = surnF ? resolveField(surnF, row, gvars) : null;
+  if (givn && surn) return givn + ' ' + surn;
+  if (givn) return givn;
+  if (surn) return surn;
+  return person.label || '(unbekannt)';
 }
 
 // ---- Build citation lines for a source ----
@@ -80,6 +100,7 @@ function collectCitations(manualCitations, attachFilter, dataRow, gvars) {
 // ---- Generate GEDCOM for all DATA rows ----
 function generateGEDCOM(headConfig) {
   headConfig = headConfig || {};
+  dateReport = []; // Reset fuer neuen Export
   const gvars = collectGlobalVars();
   const dataRows = currentRows.map((row, i) => ({ row, i })).filter(({ i }) => classifications[i]?.type === 'DATA');
   const FAM_ROLES = ['Vater','Mutter','Kind','Partner','Geschwister'];
@@ -186,15 +207,18 @@ function generateGEDCOM(headConfig) {
           if (!v) return;
           if (field.path === 'DATE') {
             const norm = normalizeDate(v);
-            if (norm && norm.startsWith('__RAW__')) {
+            if (!norm) return;
+            if (norm.unrecognized) {
               lines.push('2 DATE');
-              lines.push('3 NOTE Originalwert: ' + norm.slice(7));
-            } else if (norm && norm.includes('||NOTE:')) {
-              const [dateVal, noteVal] = norm.split('||NOTE:');
-              lines.push('2 DATE ' + dateVal.trim());
-              lines.push('3 NOTE ' + noteVal.trim());
-            } else if (norm) {
-              lines.push('2 DATE ' + norm);
+              lines.push('3 NOTE Originalwert: ' + v);
+              addDateReport(resolvePersonName(person, row, gvars), i + 1, ev.label || evTag, v, null, 'Nicht erkannt', true);
+            } else {
+              lines.push('2 DATE ' + norm.gedcom);
+              if (norm.note) lines.push('3 NOTE ' + norm.note);
+              // Nur im Report wenn automatisch konvertiert (nicht triviale Daten)
+              if (norm.note || /Johannis|Michaelis|Ostern|Pfingsten|Martini|Himmelfahrt|Trinitatis|O\.S\.|Doppeljahr|ABT|BEF|AFT|BET/i.test(v)) {
+                addDateReport(resolvePersonName(person, row, gvars), i + 1, ev.label || evTag, v, norm.gedcom, norm.note, false);
+              }
             }
           } else {
             lines.push('2 ' + field.path + ' ' + v);

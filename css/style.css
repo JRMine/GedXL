@@ -1030,3 +1030,16 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .source-fields-hint { font-size: 10px; color: #aaa; font-weight: 400; margin-left: 6px; }
 .source-existing-row { padding: 8px 0; }
 .source-existing-input { border: 1px solid #dde1ea; border-radius: 6px; padding: 5px 10px; font-size: 12px; width: 200px; }
+
+/* ---- Datum-Pruefliste ---- */
+.date-report { margin-top: 28px; border: 1px solid #e0e4eb; border-radius: 10px; padding: 20px; background: #fafbfc; }
+.date-report-title { font-size: 16px; font-weight: 700; margin: 0 0 6px; }
+.date-report-desc { font-size: 13px; color: #555; margin: 0 0 16px; }
+.date-report-section-title { font-size: 13px; font-weight: 600; margin: 14px 0 6px; color: #2d6a4f; }
+.date-report-section-title.error { color: #c0392b; }
+.date-report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.date-report-table th { background: #f0f2f5; font-weight: 600; padding: 6px 10px; text-align: left; border-bottom: 2px solid #dde1ea; }
+.date-report-table td { padding: 5px 10px; border-bottom: 1px solid #eef0f4; vertical-align: top; }
+.date-report-table code { background: #eef0f4; border-radius: 3px; padding: 1px 5px; font-size: 11px; }
+.report-row-error td { background: #fff5f5; color: #c0392b; }
+.report-row-error code { background: #fde8e8; }

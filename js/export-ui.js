@@ -188,4 +188,96 @@ function showExportPreview(gedContent, container) {
   const lines = gedContent.split('\n');
   const preview = lines.slice(0, 100).join('\n');
   pre.textContent = preview + (lines.length > 100 ? '\n\n... (' + (lines.length - 100) + ' weitere Zeilen)' : '');
+
+  // Datum-Report
+  let reportEl = container.querySelector('.date-report');
+  if (reportEl) reportEl.remove();
+  if (typeof dateReport !== 'undefined' && dateReport.length > 0) {
+    reportEl = buildDateReport(dateReport);
+    container.appendChild(reportEl);
+  }
+}
+
+function buildDateReport(report) {
+  const wrap = document.createElement('div');
+  wrap.className = 'date-report';
+
+  const unrec = report.filter(r => r.unrecognized);
+  const conv  = report.filter(r => !r.unrecognized);
+
+  const title = document.createElement('h3');
+  title.className = 'date-report-title';
+  title.innerHTML = '&#128197; Datum-Pr&uuml;fliste';
+  wrap.appendChild(title);
+
+  const desc = document.createElement('p');
+  desc.className = 'date-report-desc';
+  desc.textContent =
+    conv.length + ' Datum/Datumsangabe(n) wurden automatisch konvertiert' +
+    (unrec.length > 0 ? ', ' + unrec.length + ' konnten nicht erkannt werden und wurden als NOTE gespeichert' : '') + '.';
+  wrap.appendChild(desc);
+
+  if (unrec.length > 0) {
+    const h = document.createElement('div');
+    h.className = 'date-report-section-title error';
+    h.innerHTML = '&#9888; Nicht erkannte Daten (' + unrec.length + ')';
+    wrap.appendChild(h);
+    wrap.appendChild(buildReportTable(unrec, true));
+  }
+
+  if (conv.length > 0) {
+    const h = document.createElement('div');
+    h.className = 'date-report-section-title';
+    h.innerHTML = '&#10003; Automatisch konvertierte Daten (' + conv.length + ')';
+    wrap.appendChild(h);
+    wrap.appendChild(buildReportTable(conv, false));
+  }
+
+  // CSV-Download
+  const dlBtn = document.createElement('button');
+  dlBtn.className = 'btn-secondary';
+  dlBtn.style.marginTop = '10px';
+  dlBtn.textContent = '&#11015; Pr\u00fcfliste als CSV';
+  dlBtn.addEventListener('click', () => downloadReportCSV(report));
+  wrap.appendChild(dlBtn);
+
+  return wrap;
+}
+
+function buildReportTable(rows, showUnrec) {
+  const table = document.createElement('table');
+  table.className = 'date-report-table';
+  table.innerHTML =
+    '<thead><tr>' +
+    '<th>Zeile</th><th>Person</th><th>Feld</th>' +
+    '<th>Originalwert</th><th>GEDCOM-Datum</th><th>Hinweis</th>' +
+    '</tr></thead>';
+  const tbody = document.createElement('tbody');
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.unrecognized) tr.className = 'report-row-error';
+    tr.innerHTML =
+      '<td>' + r.rowNum + '</td>' +
+      '<td>' + escHtml(r.personName) + '</td>' +
+      '<td>' + escHtml(r.eventLabel) + '</td>' +
+      '<td><code>' + escHtml(r.original) + '</code></td>' +
+      '<td>' + (r.gedcom ? '<code>' + escHtml(r.gedcom) + '</code>' : '<em>nicht konvertiert</em>') + '</td>' +
+      '<td>' + escHtml(r.note || '') + '</td>';
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  return table;
+}
+
+function downloadReportCSV(report) {
+  const header = 'Zeile,Person,Feld,Originalwert,GEDCOM-Datum,Hinweis\n';
+  const rows = report.map(r =>
+    [r.rowNum, r.personName, r.eventLabel, r.original, r.gedcom || '', r.note || '']
+      .map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')
+  ).join('\n');
+  const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'GedXL_Datumspr\u00fcfliste.csv';
+  a.click();
 }
