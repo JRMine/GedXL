@@ -60,7 +60,8 @@ function createPerson() {
     label: 'Person',
     fields: [],   // [{id, path, label, sources:[...]}]
     events: [],   // [{id, tag, label, customType, fields:[...]}]
-    relatives: [] // [{id, role:'Vater'|'Mutter'|'Kind'|'Partner', targetPersonId}]
+    relatives: [], // [{id, role:'Vater'|'Mutter'|'Kind'|'Partner', targetPersonId}]
+    citations: []  // [{id, sourceId}] — manual + auto from attachTo.person
   };
 }
 

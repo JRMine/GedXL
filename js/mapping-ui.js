@@ -370,6 +370,53 @@ function renderPersonList() {
     }
     card.appendChild(relSection);
 
+    // ---- Person citations block ----
+    const personCitBlock = document.createElement('div');
+    personCitBlock.className = 'fields-section person-citations-block';
+    personCitBlock.innerHTML = '<div class="fields-section-title">📚 Quellenzitation zur Person</div>';
+
+    // Drop zone: drag a source chip onto the person card header area
+    personCitBlock.addEventListener('dragover', e => { e.preventDefault(); personCitBlock.classList.add('drag-over-event'); });
+    personCitBlock.addEventListener('dragleave', () => personCitBlock.classList.remove('drag-over-event'));
+    personCitBlock.addEventListener('drop', e => {
+      e.preventDefault();
+      personCitBlock.classList.remove('drag-over-event');
+      if (!dragSourceData || dragSourceData.type !== 'source') return;
+      if (!person.citations.find(c => c.sourceId === dragSourceData.sourceId)) {
+        person.citations.push({ id: newId(), sourceId: dragSourceData.sourceId });
+        renderPersonList(); renderPreview();
+      }
+    });
+
+    // Auto-citations (attachTo.person)
+    const autoPersonCits = sourceDefs.filter(s => s.attachTo.person);
+    autoPersonCits.forEach(src => {
+      personCitBlock.appendChild(renderCitationRow(src, null, null, true));
+    });
+
+    // Manual citations on person
+    person.citations
+      .filter(c => !autoPersonCits.find(s => s.id === c.sourceId))
+      .forEach(cit => {
+        const src = sourceDefs.find(s => s.id === cit.sourceId);
+        if (!src) return;
+        const row = renderCitationRow(src, null, cit, false);
+        row.querySelector('.cit-remove')?.addEventListener('click', () => {
+          person.citations = person.citations.filter(c => c.id !== cit.id);
+          renderPersonList(); renderPreview();
+        });
+        personCitBlock.appendChild(row);
+      });
+
+    if (autoPersonCits.length === 0 && person.citations.length === 0) {
+      const hint = document.createElement('div');
+      hint.className = 'event-drop-source-hint';
+      hint.textContent = '📚 Quelle aus linker Palette hierher ziehen';
+      personCitBlock.appendChild(hint);
+    }
+
+    card.appendChild(personCitBlock);
+
     mappingRight.appendChild(card);
   });
 
@@ -688,7 +735,7 @@ function renderCitationRow(src, ev, manualCit, isAuto) {
     </div>
   `;
 
-  if (!isAuto) {
+  if (!isAuto && ev) {
     row.querySelector('.cit-remove').addEventListener('click', () => {
       ev.citations = ev.citations.filter(c => c.id !== manualCit?.id);
       renderPersonList(); renderPreview();
