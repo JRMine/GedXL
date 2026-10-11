@@ -337,7 +337,7 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 
 .mapping-layout {
   display: grid;
-  grid-template-columns: 300px 1fr 260px;
+  grid-template-columns: 360px 1fr 260px;
   gap: 16px;
   align-items: start;
 }
@@ -374,7 +374,24 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .static-chip { background: #fff8e1; border-color: #ffe082; }
 .static-chip:hover { background: #fff3cd; }
 .chip-name { display: block; font-size: 12px; font-weight: 600; color: #1a1a2e; }
-.chip-val { display: block; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+.chip-val { display: block; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+
+/* Chip grid: 2 columns for column chips */
+.chip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+/* Single-column sections (vars, static, sources) */
+.chip-grid-single {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+/* In 2-col grid chips get no bottom margin (gap handles it) */
+.chip-grid .col-chip { margin-bottom: 0; }
 
 /* ---- Mapping center ---- */
 .mapping-center {

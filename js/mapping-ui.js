@@ -72,6 +72,8 @@ function renderColumnPalette() {
     gTitle.className = 'palette-section-title';
     gTitle.textContent = '🔖 Globale Variablen';
     mappingLeft.appendChild(gTitle);
+    const gGrid = document.createElement('div');
+    gGrid.className = 'chip-grid-single';
     Object.entries(gvars).forEach(([varName, value]) => {
       const chip = document.createElement('div');
       chip.className = 'col-chip var-chip';
@@ -79,15 +81,17 @@ function renderColumnPalette() {
       chip.innerHTML = `<span class="chip-name">${escHtml(varName)}</span><span class="chip-val">${escHtml(value)}</span>`;
       chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'var', varName, label: varName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
       chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-      mappingLeft.appendChild(chip);
+      gGrid.appendChild(chip);
     });
+    mappingLeft.appendChild(gGrid);
   }
 
   const colTitle = document.createElement('div');
   colTitle.className = 'palette-section-title';
   colTitle.textContent = '📋 Tabellenspalten';
   mappingLeft.appendChild(colTitle);
-
+  const colGrid = document.createElement('div');
+  colGrid.className = 'chip-grid';
   headers.forEach((colName, colIdx) => {
     if (ignoredColumns.has(colIdx)) return;
     const example = getColExample(colIdx);
@@ -96,60 +100,53 @@ function renderColumnPalette() {
     chip.className = 'col-chip' + (used ? ' col-chip-used' : '');
     chip.title = used ? 'Bereits zugeordnet' : '';
     chip.draggable = true;
-    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}${used ? `<span class="chip-used-dot" title="Bereits zugeordnet">✓</span>` : ''}`;
+    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}${used ? ' <span class="chip-used-dot">✓</span>' : ''}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
     chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'col', colIdx, label: colName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
     chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-    mappingLeft.appendChild(chip);
+    colGrid.appendChild(chip);
   });
+  mappingLeft.appendChild(colGrid);
 
   const staticTitle = document.createElement('div');
   staticTitle.className = 'palette-section-title';
   staticTitle.textContent = '✏️ Manuelle Eingabe';
   mappingLeft.appendChild(staticTitle);
+  const staticGrid = document.createElement('div');
+  staticGrid.className = 'chip-grid-single';
   const staticChip = document.createElement('div');
   staticChip.className = 'col-chip static-chip';
   staticChip.draggable = true;
   staticChip.innerHTML = `<span class="chip-name">✏️ Fester Wert</span><span class="chip-val">für alle Zeilen gleich</span>`;
   staticChip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'static', value: '', label: 'Fester Wert' }; staticChip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
   staticChip.addEventListener('dragend', () => staticChip.classList.remove('dragging'));
-  mappingLeft.appendChild(staticChip);
+  staticGrid.appendChild(staticChip);
+  mappingLeft.appendChild(staticGrid);
 
-  // ---- Sources section ----
   if (sourceDefs.length > 0) {
     const srcTitle = document.createElement('div');
     srcTitle.className = 'palette-section-title';
     srcTitle.textContent = '📚 Quellen';
     mappingLeft.appendChild(srcTitle);
-
     const srcHint = document.createElement('p');
     srcHint.className = 'palette-hint';
-    srcHint.textContent = 'Auf Person oder Ereignis ziehen, um Zitation manuell hinzuzufügen.';
+    srcHint.textContent = 'Auf Person oder Ereignis ziehen.';
     mappingLeft.appendChild(srcHint);
-
+    const srcGrid = document.createElement('div');
+    srcGrid.className = 'chip-grid-single';
     sourceDefs.forEach(src => {
       const chip = document.createElement('div');
       chip.className = 'col-chip src-chip';
       chip.draggable = true;
-
-      // Build preview of citation fields
       const dataRow = getFirstDataRow();
-      const citPreview = src.citationFields
-        .map(f => previewSourceField(f, dataRow))
-        .filter(Boolean).slice(0, 1).join('') || '';
-
       const modeLabel = src.mode === 'existing'
         ? `ID: ${src.existingId || '?'}`
-        : src.sourceFields.find(f => f.tag === 'TITL') ? previewSourceField(src.sourceFields.find(f => f.tag === 'TITL'), dataRow) || src.name : src.name;
-
+        : (src.sourceFields.find(f => f.tag === 'TITL') ? previewSourceField(src.sourceFields.find(f => f.tag === 'TITL'), dataRow) || src.name : src.name);
       chip.innerHTML = `<span class="chip-name">📚 ${escHtml(src.name)}</span><span class="chip-val">${escHtml(modeLabel)}</span>`;
-      chip.addEventListener('dragstart', (e) => {
-        dragSourceData = { type: 'source', sourceId: src.id, label: src.name };
-        chip.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'copy';
-      });
+      chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'source', sourceId: src.id, label: src.name }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
       chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
-      mappingLeft.appendChild(chip);
+      srcGrid.appendChild(chip);
     });
+    mappingLeft.appendChild(srcGrid);
   }
 }
 
