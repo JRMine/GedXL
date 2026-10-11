@@ -4,6 +4,7 @@
 
 // ---- State ----
 let parsedFile = null;
+let uploadedFileName = '';
 let currentRows = [];
 let classifications = [];
 let headers = [];
@@ -90,6 +91,7 @@ fileInput.addEventListener('change', () => {
 
 // ---- File handling ----
 async function handleFile(file) {
+  uploadedFileName = file.name.replace(/\.[^.]+$/, ''); // ohne Extension
   try {
     parsedFile = await parseFile(file);
     if (parsedFile.sheetNames.length === 1) {

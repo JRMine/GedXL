@@ -93,9 +93,10 @@ function initExport() {
   // ---- Filename input ----
   const filenameDiv = document.createElement('div');
   filenameDiv.className = 'export-filename-row';
+  const suggestedName = (typeof uploadedFileName !== 'undefined' && uploadedFileName ? uploadedFileName : 'export') + '.ged';
   filenameDiv.innerHTML =
     '<label class="export-filename-label">Dateiname:' +
-    '<input id="export-filename" class="export-filename-input" value="export.ged" />' +
+    '<input id="export-filename" class="export-filename-input" value="' + escHtml(suggestedName) + '" />' +
     '</label>';
   container.appendChild(filenameDiv);
 

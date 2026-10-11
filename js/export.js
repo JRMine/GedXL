@@ -377,11 +377,16 @@ function validateBeforeExport() {
     const hasName = person.fields.some(f => f.path === 'NAME.GIVN' || f.path === 'NAME.SURN');
     if (!hasName) warnings.push({ level: 'warn', msg: person.label + ': Kein Namensfeld (GIVN/SURN) zugeordnet.' });
 
-    // SEX-Warnung wenn Person in FAM-Beziehung steckt
-    const inFam = person.relatives.some(r => FAM_ROLES.includes(r.role)) ||
-      mappingPersons.some(other => other.relatives.some(r => FAM_ROLES.includes(r.role) && r.targetPersonId === person.id));
+    // SEX-Warnung nur wenn Person als Elternteil oder Partner vorkommt
+    // (bei "Kind" oder "Geschwister" ist das Geschlecht fuer die FAM-Zuweisung irrelevant)
+    const PARENT_PARTNER_ROLES = ['Vater', 'Mutter', 'Partner'];
+    const isParentOrPartner =
+      person.relatives.some(r => PARENT_PARTNER_ROLES.includes(r.role)) ||
+      mappingPersons.some(other => other.relatives.some(r =>
+        r.targetPersonId === person.id && ['Kind', 'Geschwister'].indexOf(r.role) === -1
+      ));
     const hasSex = person.fields.some(f => f.path === 'SEX');
-    if (inFam && !hasSex) {
+    if (isParentOrPartner && !hasSex) {
       warnings.push({ level: 'warn', msg: person.label + ': Hat FAM-Beziehungen, aber kein Geschlechtsfeld (SEX) zugeordnet. HUSB/WIFE-Zuweisung im FAM-Record koennte falsch sein. Mutter- und Vater-Beziehungen koennen nur durch Angabe eines Geschlechts korrekt zugeordnet werden.' });
     }
   });
