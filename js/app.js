@@ -276,29 +276,33 @@ function finalizeCurrentSheet() {
 }
 
 function finalizeMerge() {
-  // Merge all done data sheets
   let mergedRows = [];
+  let mergedClassifications = [];
   let mergedHeaders = null;
+  const mergedIgnored = new Set();
 
   sheetImportDone.forEach((sheet, idx) => {
-    const dataRows = sheet.rows;
-    const cls      = sheet.classifications;
-    if (idx === 0) {
-      mergedRows    = dataRows;
-      mergedHeaders = sheet.headers;
-    } else {
-      dataRows.forEach((row, i) => {
-        if (cls[i]?.type !== 'HEADER') mergedRows.push(row);
-      });
-    }
+    sheet.ignoredColumns.forEach(c => mergedIgnored.add(c));
+    sheet.rows.forEach((row, i) => {
+      const cls = sheet.classifications[i];
+      if (idx === 0) {
+        mergedRows.push(row);
+        mergedClassifications.push(cls);
+        if (!mergedHeaders) mergedHeaders = sheet.headers;
+      } else {
+        // Ueberspringe Header-Zeilen aus Folgeblättern
+        if (cls?.type !== 'HEADER') {
+          mergedRows.push(row);
+          mergedClassifications.push(cls);
+        }
+      }
+    });
   });
 
   currentRows     = mergedRows;
-  classifications = classifyAllRows(currentRows);
+  classifications = mergedClassifications;
   headers         = mergedHeaders || deriveHeaders();
-  // ignoredColumns: union of all sheets' ignored columns
-  ignoredColumns  = new Set();
-  sheetImportDone.forEach(s => s.ignoredColumns.forEach(c => ignoredColumns.add(c)));
+  ignoredColumns  = mergedIgnored;
 
   // DOM neu aufbauen damit collectGlobalVars() die Eingabefelder findet
   renderRowTable();
