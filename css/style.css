@@ -1000,3 +1000,9 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   font-size: 11px; color: #9ca3af; font-style: italic; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap; flex: 1;
 }
+
+/* ---- Import-Check Blatt-Untertitel ---- */
+.import-sheet-subtitle {
+  font-size: 13px; font-weight: 400; color: #6366f1;
+  margin-left: 10px; font-style: italic;
+}

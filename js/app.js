@@ -9,7 +9,12 @@ let currentRows = [];
 let classifications = [];
 let headers = [];
 let varCounter = 1;
-let ignoredColumns = new Set(); // Spalten-Indizes die ignoriert werden sollen
+let ignoredColumns = new Set();
+
+// Multi-sheet import queue
+let sheetImportQueue = [];   // [{name, role, rows}] — noch zu verarbeitende Blaetter
+let sheetImportDone  = [];   // [{name, role, rows, classifications, headers, ignoredColumns}] — abgeschlossen
+let sourceSheets = {};       // { sheetName: rows[][] }
 
 // ---- DOM Refs ----
 const stepUpload   = document.getElementById('step-upload');
@@ -68,8 +73,24 @@ btnBack.addEventListener('click', () => {
   } else if (currentStep === 3) {
     showStep(stepImport, 2);
   } else if (currentStep === 2) {
-    if (parsedFile && parsedFile.sheetNames.length > 1) showStep(stepSheets, 1);
-    else showStep(stepUpload, 1);
+    if (sheetImportDone.length > 0) {
+      // Zurueck zum vorherigen Blatt
+      const prev = sheetImportDone.pop();
+      sheetImportQueue.unshift(prev);
+      currentRows     = prev.rows;
+      classifications = prev.classifications;
+      ignoredColumns  = prev.ignoredColumns;
+      headers         = prev.headers;
+      renderRowTable();
+      renderGlobalVars();
+      renderColumnStats();
+      checkNextButton();
+      showStep(stepImport, 2);
+    } else if (parsedFile && parsedFile.sheetNames.length > 1) {
+      showStep(stepSheets, 1);
+    } else {
+      showStep(stepUpload, 1);
+    }
   } else if (currentStep === 1 && document.getElementById('step-sheets').classList.contains('active')) {
     showStep(stepUpload, 1);
   }
@@ -192,15 +213,15 @@ document.getElementById('btn-sheets-next').addEventListener('click', () => {
   loadSheets(roleMap);
 });
 
-// ---- Load sheets by role ----
+// ---- Load sheets by role — build queue ----
 function loadSheets(roleMap) {
   sourceSheets = {};
-  let mergedRows = [];
+  sheetImportQueue = [];
+  sheetImportDone  = [];
 
   Object.entries(roleMap).forEach(([name, role]) => {
     if (role === 'ignore') return;
     let rows = parsedFile.getSheet(name);
-    // Strip trailing empty rows
     while (rows.length > 0) {
       const last = rows[rows.length - 1];
       if (last.every(c => c === null || c === undefined || String(c).trim() === '')) rows.pop();
@@ -209,28 +230,85 @@ function loadSheets(roleMap) {
     if (role === 'source') {
       sourceSheets[name] = rows;
     } else {
-      // data: merge, skip header rows of subsequent sheets
-      if (mergedRows.length === 0) {
-        mergedRows = rows;
-      } else {
-        const tempCls = classifyAllRows(rows);
-        rows.forEach((row, i) => {
-          if (tempCls[i]?.type !== 'HEADER') mergedRows.push(row);
-        });
-      }
+      sheetImportQueue.push({ name, role, rows });
     }
   });
 
-  currentRows = mergedRows;
+  if (sheetImportQueue.length === 0) {
+    alert('Kein Personendaten-Blatt ausgewaehlt.');
+    return;
+  }
+  loadNextSheetForCheck();
+}
+
+function loadNextSheetForCheck() {
+  if (sheetImportQueue.length === 0) {
+    finalizeMerge();
+    return;
+  }
+  const sheet = sheetImportQueue[0];
+  currentRows     = sheet.rows;
   classifications = classifyAllRows(currentRows);
-  varCounter = 1;
-  ignoredColumns = new Set();
-  headers = deriveHeaders();
+  varCounter      = 1;
+  ignoredColumns  = new Set();
+  headers         = deriveHeaders();
   renderRowTable();
   renderGlobalVars();
   renderColumnStats();
   checkNextButton();
+
+  // Zeige Blatt-Fortschritt im Titel
+  const total = sheetImportQueue.length + sheetImportDone.length;
+  const current = sheetImportDone.length + 1;
+  const subtitle = document.getElementById('import-sheet-subtitle');
+  if (subtitle) {
+    subtitle.textContent = sheetImportQueue.length + sheetImportDone.length > 1
+      ? 'Blatt ' + current + ' von ' + total + ': ' + sheet.name
+      : '';
+  }
   showStep(stepImport, 2);
+}
+
+function finalizeCurrentSheet() {
+  const sheet = sheetImportQueue.shift();
+  sheetImportDone.push({
+    name: sheet.name,
+    role: sheet.role,
+    rows: currentRows,
+    classifications: [...classifications],
+    ignoredColumns: new Set(ignoredColumns),
+    headers: [...headers],
+  });
+  loadNextSheetForCheck();
+}
+
+function finalizeMerge() {
+  // Merge all done data sheets
+  let mergedRows = [];
+  let mergedHeaders = null;
+
+  sheetImportDone.forEach((sheet, idx) => {
+    const dataRows = sheet.rows;
+    const cls      = sheet.classifications;
+    if (idx === 0) {
+      mergedRows    = dataRows;
+      mergedHeaders = sheet.headers;
+    } else {
+      dataRows.forEach((row, i) => {
+        if (cls[i]?.type !== 'HEADER') mergedRows.push(row);
+      });
+    }
+  });
+
+  currentRows     = mergedRows;
+  classifications = classifyAllRows(currentRows);
+  headers         = mergedHeaders || deriveHeaders();
+  // ignoredColumns: union of all sheets' ignored columns
+  ignoredColumns  = new Set();
+  sheetImportDone.forEach(s => s.ignoredColumns.forEach(c => ignoredColumns.add(c)));
+
+  initSources();
+  showStep(document.getElementById('step-sources'), 3);
 }
 
 // ---- Derive headers ----
@@ -438,8 +516,10 @@ function checkNextButton() {
   const hasData   = classifications.some(c => c.type === 'DATA');
   btnNext.disabled = !(hasHeader && hasData);
   nextHint.textContent = btnNext.disabled
-    ? 'Bitte mindestens eine Header-Zeile und Datenzeilen bestätigen.'
+    ? 'Bitte mindestens eine Header-Zeile und Datenzeilen best\u00e4tigen.'
     : `Bereit: ${classifications.filter(c => c.type === 'DATA').length} Datenzeilen erkannt.`;
+  updateNextButtonLabel();
+}
 }
 
 // ---- Utility ----
@@ -447,11 +527,28 @@ function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ---- Next button (Import-Check → Quelleneinstellungen) ----
+// ---- Next button (Import-Check → naechstes Blatt oder Quelleneinstellungen) ----
 btnNext.addEventListener('click', () => {
-  initSources();
-  showStep(document.getElementById('step-sources'), 3);
+  if (sheetImportQueue.length > 0) {
+    finalizeCurrentSheet(); // laedt naechstes Blatt oder finalizeMerge
+  } else {
+    // Einzelnes Blatt (kein Queue-Betrieb)
+    initSources();
+    showStep(document.getElementById('step-sources'), 3);
+  }
 });
+
+// Weiter-Button Label dynamisch anpassen
+function updateNextButtonLabel() {
+  const remaining = sheetImportQueue.length;
+  if (remaining > 1) {
+    btnNext.textContent = 'Weiter \u2192 Blatt ' + (sheetImportDone.length + 2) + ' von ' + (sheetImportQueue.length + sheetImportDone.length);
+  } else if (remaining === 1) {
+    btnNext.textContent = 'Weiter \u2192 Quelleneinstellungen';
+  } else {
+    btnNext.textContent = 'Weiter zur Quellenkonfiguration';
+  }
+}
 
 // ---- Sources -> Mapping ----
 document.getElementById('btn-sources-next').addEventListener('click', () => {
