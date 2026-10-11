@@ -816,3 +816,18 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .cit-field-val { color: #555; }
 .src-chip { background: #e8f5e9; border-color: #a5d6a7; }
 .src-chip:hover { background: #c8e6c9; }
+
+/* ---- Column chip: already mapped ---- */
+.col-chip-used {
+  background: #e8f5e9;
+  border-color: #81c784;
+  opacity: 0.75;
+}
+.col-chip-used .chip-name { color: #2e7d32; }
+.chip-used-dot {
+  margin-left: auto;
+  font-size: 11px;
+  color: #2e7d32;
+  font-weight: 700;
+  flex-shrink: 0;
+}

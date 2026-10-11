@@ -48,6 +48,14 @@ function initMapping() {
 function renderColumnPalette() {
   mappingLeft.innerHTML = '';
 
+  // Collect all already-used colIdx values across all persons/events
+  const usedCols = new Set();
+  mappingPersons.forEach(p => {
+    const collectFields = fields => fields.forEach(f => f.sources.forEach(s => { if (s.type === 'col') usedCols.add(s.colIdx); }));
+    collectFields(p.fields);
+    p.events.forEach(ev => collectFields(ev.fields));
+  });
+
   const title = document.createElement('h3');
   title.className = 'palette-title';
   title.textContent = 'Verfügbare Spalten';
@@ -83,10 +91,12 @@ function renderColumnPalette() {
   headers.forEach((colName, colIdx) => {
     if (ignoredColumns.has(colIdx)) return;
     const example = getColExample(colIdx);
+    const used = usedCols.has(colIdx);
     const chip = document.createElement('div');
-    chip.className = 'col-chip';
+    chip.className = 'col-chip' + (used ? ' col-chip-used' : '');
+    chip.title = used ? 'Bereits zugeordnet' : '';
     chip.draggable = true;
-    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}`;
+    chip.innerHTML = `<span class="chip-name">${escHtml(colName)}</span>${example ? `<span class="chip-val">${escHtml(example)}</span>` : ''}${used ? `<span class="chip-used-dot" title="Bereits zugeordnet">✓</span>` : ''}`;
     chip.addEventListener('dragstart', (e) => { dragSourceData = { type: 'col', colIdx, label: colName }; chip.classList.add('dragging'); e.dataTransfer.effectAllowed = 'copy'; });
     chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
     mappingLeft.appendChild(chip);
@@ -264,6 +274,7 @@ function colSelect(id, selectedIdx) {
 // ---- Person list (right side) ----
 function renderPersonList() {
   mappingRight.innerHTML = '';
+  renderColumnPalette(); // refresh used-state on chips
 
   mappingPersons.forEach(person => {
     const card = document.createElement('div');
