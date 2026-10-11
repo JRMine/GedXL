@@ -1077,3 +1077,8 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .proj-summary-item { background: #fff; border: 1px solid #dde1ea; border-radius: 5px; padding: 3px 10px; }
 .proj-summary-edit { margin-left: auto; color: #3b6ef5; cursor: pointer; text-decoration: none; font-size: 12px; }
 .proj-summary-edit:hover { text-decoration: underline; }
+
+/* ---- App Footer ---- */
+.app-footer { text-align: center; padding: 18px 20px 24px; font-size: 12px; color: #999; border-top: 1px solid #eee; margin-top: 40px; }
+.app-footer a { color: #888; text-decoration: none; }
+.app-footer a:hover { color: #3b6ef5; text-decoration: underline; }
