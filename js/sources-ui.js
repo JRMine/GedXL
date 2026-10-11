@@ -156,14 +156,19 @@ function renderSourceFieldRow(field, src, fieldSet) {
   if (canToggle) {
     const btnStatic = document.createElement('button');
     btnStatic.className = 'toggle-btn' + (field.valueType === 'static' ? ' active' : '');
-    btnStatic.textContent = '✏️ Fester Wert';
+    btnStatic.textContent = '&#9999;&#65039; Fester Wert';
     btnStatic.addEventListener('click', () => { field.valueType = 'static'; renderAllSources(); });
     const btnCol = document.createElement('button');
     btnCol.className = 'toggle-btn' + (field.valueType === 'col' ? ' active' : '');
-    btnCol.textContent = '📋 Aus Spalte';
+    btnCol.textContent = '&#128203; Aus Spalte';
     btnCol.addEventListener('click', () => { field.valueType = 'col'; renderAllSources(); });
+    const btnVar = document.createElement('button');
+    btnVar.className = 'toggle-btn' + (field.valueType === 'var' ? ' active' : '');
+    btnVar.textContent = '&#123;&#125; Glob. Variable';
+    btnVar.addEventListener('click', () => { field.valueType = 'var'; renderAllSources(); });
     typeWrap.appendChild(btnStatic);
     typeWrap.appendChild(btnCol);
+    typeWrap.appendChild(btnVar);
   } else {
     typeWrap.innerHTML = '<span class="toggle-fixed">📋 Aus Spalte</span>';
   }
@@ -176,9 +181,35 @@ function renderSourceFieldRow(field, src, fieldSet) {
     const input = document.createElement('input');
     input.className = 'source-val-input';
     input.value = field.value || '';
-    input.placeholder = 'Wert eingeben…';
+    input.placeholder = 'Wert eingeben\u2026';
     input.addEventListener('input', e => { field.value = e.target.value; updateSourcePreview(src); });
     valueWrap.appendChild(input);
+  } else if (field.valueType === 'var') {
+    const gvars = collectGlobalVars();
+    const varNames = Object.keys(gvars);
+    if (varNames.length === 0) {
+      const hint = document.createElement('span');
+      hint.className = 'source-col-example';
+      hint.textContent = 'Keine globalen Variablen definiert (Import-Check).';
+      valueWrap.appendChild(hint);
+    } else {
+      const sel = document.createElement('select');
+      sel.className = 'source-val-select';
+      varNames.forEach(v => {
+        const o = document.createElement('option');
+        o.value = v;
+        o.textContent = v + ' = ' + gvars[v];
+        o.selected = field.varName === v;
+        sel.appendChild(o);
+      });
+      if (!field.varName) field.varName = varNames[0];
+      sel.addEventListener('change', e => { field.varName = e.target.value; updateSourcePreview(src); });
+      valueWrap.appendChild(sel);
+      const ex = document.createElement('span');
+      ex.className = 'source-col-example';
+      ex.textContent = '\u2192 ' + (gvars[field.varName] || '');
+      valueWrap.appendChild(ex);
+    }
   } else {
     const sel = buildColSelect(field.colIdx, (val) => { field.colIdx = val; updateSourcePreview(src); });
     valueWrap.appendChild(sel);

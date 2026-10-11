@@ -81,5 +81,9 @@ function previewSourceField(field, dataRow) {
     const v = dataRow[field.colIdx];
     return v !== null && v !== undefined && String(v).trim() !== '' ? String(v).trim() : null;
   }
+  if (field.valueType === 'var' && field.varName) {
+    const gvars = (typeof collectGlobalVars === 'function') ? collectGlobalVars() : {};
+    return gvars[field.varName] || null;
+  }
   return null;
 }
