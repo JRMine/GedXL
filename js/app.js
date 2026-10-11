@@ -1,5 +1,5 @@
-/**
- * app.js - GedXL Hauptlogik (Schritt 1 + 2)
+﻿/**
+ * app.js - GedXL Hauptlogik
  */
 
 // ---- State ----
@@ -12,13 +12,14 @@ let varCounter = 1;
 let ignoredColumns = new Set();
 
 // Multi-sheet import queue
-let sheetImportQueue = [];   // [{name, role, rows}] - noch zu verarbeitende Blaetter
-let sheetImportDone  = [];   // [{name, role, rows, classifications, headers, ignoredColumns}] - abgeschlossen
-let sourceSheets = {};       // { sheetName: rows[][] }
+let sheetImportQueue = [];
+let sheetImportDone  = [];
+let sourceSheets = {};
 
 // ---- DOM Refs ----
 const stepUpload   = document.getElementById('step-upload');
 const stepSheets   = document.getElementById('step-sheets');
+const stepProject  = document.getElementById('step-project');
 const stepImport   = document.getElementById('step-import');
 const dropZone     = document.getElementById('drop-zone');
 const fileInput    = document.getElementById('file-input');
@@ -36,13 +37,14 @@ const navItems     = {
   3: document.getElementById('nav-3'),
   4: document.getElementById('nav-4'),
   5: document.getElementById('nav-5'),
+  6: document.getElementById('nav-6'),
 };
 
 // ---- Step / Nav helpers ----
 let currentStep = 1;
 
 function showStep(stepEl, stepNum) {
-  [stepUpload, stepSheets, stepImport,
+  [stepUpload, stepSheets, stepProject, stepImport,
    document.getElementById('step-sources'),
    document.getElementById('step-mapping'),
    document.getElementById('step-export')
@@ -66,13 +68,13 @@ function updateNav(activeNum) {
 
 // ---- Back button ----
 btnBack.addEventListener('click', () => {
-  if (currentStep === 5) {
-    showStep(document.getElementById('step-mapping'), 4);
+  if (currentStep === 6) {
+    showStep(document.getElementById('step-mapping'), 5);
+  } else if (currentStep === 5) {
+    showStep(document.getElementById('step-sources'), 4);
   } else if (currentStep === 4) {
-    showStep(document.getElementById('step-sources'), 3);
+    showStep(stepImport, 3);
   } else if (currentStep === 3) {
-    showStep(stepImport, 2);
-  } else if (currentStep === 2) {
     if (sheetImportDone.length > 0) {
       // Zurueck zum vorherigen Blatt
       const prev = sheetImportDone.pop();
@@ -85,8 +87,12 @@ btnBack.addEventListener('click', () => {
       renderGlobalVars();
       renderColumnStats();
       checkNextButton();
-      showStep(stepImport, 2);
-    } else if (parsedFile && parsedFile.sheetNames.length > 1) {
+      showStep(stepImport, 3);
+    } else {
+      showStep(stepProject, 2);
+    }
+  } else if (currentStep === 2) {
+    if (parsedFile && parsedFile.sheetNames.length > 1) {
       showStep(stepSheets, 1);
     } else {
       showStep(stepUpload, 1);
@@ -157,7 +163,10 @@ sourceSheets = {}; // reset
 function proceedFromUpload() {
   if (!parsedFile) return;
   if (parsedFile.sheetNames.length === 1) {
-    loadSheets({ [parsedFile.sheetNames[0]]: 'data' });
+    // Direkt zu Projekteinstellungen, roleMap merken
+    window._pendingRoleMap = { [parsedFile.sheetNames[0]]: 'data' };
+    showStep(stepProject, 2);
+    if (typeof initProjectSettings === 'function') initProjectSettings();
   } else {
     sheetList.innerHTML = '';
     parsedFile.sheetNames.forEach((name, idx) => {
@@ -207,7 +216,9 @@ document.getElementById('btn-sheets-next').addEventListener('click', () => {
   });
   const hasData = Object.values(roleMap).some(r => r === 'data');
   if (!hasData) { alert('Bitte mindestens ein Blatt als Personendaten auswaehlen.'); return; }
-  loadSheets(roleMap);
+  window._pendingRoleMap = roleMap;
+  showStep(stepProject, 2);
+  if (typeof initProjectSettings === 'function') initProjectSettings();
 });
 
 // ---- Load sheets by role - build queue ----
@@ -259,7 +270,7 @@ function loadNextSheetForCheck() {
       ? 'Blatt ' + current + ' von ' + total + ': ' + sheet.name
       : '';
   }
-  showStep(stepImport, 2);
+  showStep(stepImport, 3);
 }
 
 function finalizeCurrentSheet() {
@@ -303,7 +314,7 @@ function finalizeMerge() {
         mergedClassifications.push(cls);
         if (!mergedHeaders) mergedHeaders = sheet.headers;
       } else {
-        // Ueberspringe Header-Zeilen aus Folgeblättern
+        // Ueberspringe Header-Zeilen aus FolgeblÃ¤ttern
         if (cls?.type !== 'HEADER') {
           mergedRows.push(row);
           mergedClassifications.push(cls);
@@ -339,7 +350,7 @@ function finalizeMerge() {
   renderGlobalVars();
 
   initSources();
-  showStep(document.getElementById('step-sources'), 3);
+  showStep(document.getElementById('step-sources'), 4);
 }
 
 // ---- Derive headers ----
@@ -397,7 +408,7 @@ function renderRowTable() {
       const span = document.createElement('span');
       span.className = 'cell-preview';
       span.title = row.map(c => c ?? '').join(' | ');
-      span.textContent = nonEmpty.slice(0, 8).join(' · ');
+      span.textContent = nonEmpty.slice(0, 8).join(' Â· ');
       tdPreview.appendChild(span);
     }
     tr.appendChild(tdPreview);
@@ -427,7 +438,7 @@ function renderVarInputsForRow(container, row, rowIdx) {
     inp.type = 'text';
     inp.className = 'varname-input';
     inp.dataset.colIdx = colIdx;
-    // Auto-name: year → {Jahr}, otherwise {ColName}
+    // Auto-name: year â†’ {Jahr}, otherwise {ColName}
     if (/^\d{4}$/.test(val)) {
       inp.value = '{Jahr}';
     } else {
@@ -496,7 +507,7 @@ function renderGlobalVars() {  const items = [];
       '<div class="globalvar-value">Zeile ' + rowNum + ': &quot;' + escHtml(value) + '&quot;</div>' +
       '<button class="globalvar-remove" title="Variable entfernen">&#10005;</button>';
     div.querySelector('.globalvar-remove').addEventListener('click', () => {
-      // Nur diese Spalte aus der Zeile entfernen — varname-wrap mit passendem colIdx entfernen
+      // Nur diese Spalte aus der Zeile entfernen â€” varname-wrap mit passendem colIdx entfernen
       const tr = rowTableBody.children[rowIdx];
       if (tr) {
         tr.querySelectorAll('.varname-wrap').forEach(w => {
@@ -518,7 +529,7 @@ function renderColumnStats() {
   const hideEmpty = chkHideEmpty.checked;
 
   if (stats.length === 0) {
-    columnsList.innerHTML = '<p class="empty-hint">Wird nach Bestätigung der Header-Zeile angezeigt.</p>';
+    columnsList.innerHTML = '<p class="empty-hint">Wird nach BestÃ¤tigung der Header-Zeile angezeigt.</p>';
     return;
   }
 
@@ -578,7 +589,7 @@ function checkNextButton() {
 
 // escHtml -> ui-utils.js
 
-// ---- Next button (Import-Check → naechstes Blatt oder Quelleneinstellungen) ----
+// ---- Next button (Import-Check â†’ naechstes Blatt oder Quelleneinstellungen) ----
 btnNext.addEventListener('click', () => {
   finalizeCurrentSheet();
 });
@@ -598,11 +609,11 @@ function updateNextButtonLabel() {
 // ---- Sources -> Mapping ----
 document.getElementById('btn-sources-next').addEventListener('click', () => {
   initMapping();
-  showStep(document.getElementById('step-mapping'), 4);
+  showStep(document.getElementById('step-mapping'), 5);
 });
 
 // ---- Mapping -> Export ----
 document.getElementById('btn-to-export').addEventListener('click', () => {
   initExport();
-  showStep(document.getElementById('step-export'), 5);
+  showStep(document.getElementById('step-export'), 6);
 });

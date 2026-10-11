@@ -1057,3 +1057,23 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   pointer-events: none;
 }
 .add-dropdown-group:first-child { border-top: none; margin-top: 0; }
+
+/* ---- Projekteinstellungen ---- */
+.project-settings-layout { display: grid; grid-template-columns: 1fr 1fr 320px; gap: 20px; align-items: start; }
+.project-col {}
+.project-col-preview {}
+.settings-card { background: #fff; border: 1px solid #e0e4eb; border-radius: 10px; padding: 20px; }
+.settings-card-title { font-size: 14px; font-weight: 700; margin: 0 0 16px; color: #1a1f36; }
+.settings-row { display: grid; grid-template-columns: 200px 1fr; gap: 10px; align-items: start; margin-bottom: 14px; }
+.settings-label { font-size: 12px; font-weight: 600; color: #444; padding-top: 7px; }
+.settings-control {}
+.settings-select { width: 100%; border: 1px solid #dde1ea; border-radius: 6px; padding: 6px 10px; font-size: 13px; }
+.settings-input { width: 100%; border: 1px solid #dde1ea; border-radius: 6px; padding: 6px 10px; font-size: 13px; box-sizing: border-box; }
+.settings-textarea { width: 100%; border: 1px solid #dde1ea; border-radius: 6px; padding: 6px 10px; font-size: 13px; box-sizing: border-box; resize: vertical; }
+.settings-hint { font-size: 11px; color: #7a8499; margin: 4px 0 0; line-height: 1.4; }
+
+/* ---- Export Zusammenfassung ---- */
+.export-proj-summary { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; padding: 10px 14px; background: #f0f4ff; border-radius: 8px; font-size: 12px; }
+.proj-summary-item { background: #fff; border: 1px solid #dde1ea; border-radius: 5px; padding: 3px 10px; }
+.proj-summary-edit { margin-left: auto; color: #3b6ef5; cursor: pointer; text-decoration: none; font-size: 12px; }
+.proj-summary-edit:hover { text-decoration: underline; }

@@ -17,20 +17,24 @@
         <span class="nav-num">1</span> Upload
       </div>
       <div class="step-nav-sep">&rsaquo;</div>
-      <div class="step-nav-item" id="nav-2">
-        <span class="nav-num">2</span> Import-Check
+      <div class="step-nav-item disabled" id="nav-2">
+        <span class="nav-num">2</span> Projekteinstellungen
       </div>
       <div class="step-nav-sep">&rsaquo;</div>
       <div class="step-nav-item disabled" id="nav-3">
-        <span class="nav-num">3</span> Quellen
+        <span class="nav-num">3</span> Import-Check
       </div>
       <div class="step-nav-sep">&rsaquo;</div>
       <div class="step-nav-item disabled" id="nav-4">
-        <span class="nav-num">4</span> Mapping
+        <span class="nav-num">4</span> Quellen
       </div>
       <div class="step-nav-sep">&rsaquo;</div>
       <div class="step-nav-item disabled" id="nav-5">
-        <span class="nav-num">5</span> Export
+        <span class="nav-num">5</span> Mapping
+      </div>
+      <div class="step-nav-sep">&rsaquo;</div>
+      <div class="step-nav-item disabled" id="nav-6">
+        <span class="nav-num">6</span> Export
       </div>
     </nav>
     <div class="header-right">
@@ -69,20 +73,115 @@
     <!-- STEP 1b: Sheet selection -->
     <section id="step-sheets" class="step hidden">
       <h2 class="step-title"><span class="step-num">1</span> Tabellenblatt auswaehlen</h2>
-      <p class="section-desc">Legen Sie fest, welche Blaetter importiert werden sollen. Mehrere Blaetter werden zusammengefuehrt (Spalten muessen uebereinstimmen).</p>
+      <p class="section-desc">Legen Sie fest, welche Blaetter importiert werden sollen.</p>
       <div id="sheet-list" class="sheet-list"></div>
       <div class="sheet-actions">
         <button id="btn-sheets-next" class="btn-primary" style="margin-left:auto">Weiter &#8594;</button>
       </div>
     </section>
 
-    <!-- STEP 2: Import-Check -->
+    <!-- STEP 2: Projekteinstellungen -->
+    <section id="step-project" class="step hidden">
+      <h2 class="step-title"><span class="step-num">2</span> Projekteinstellungen</h2>
+      <p class="section-desc">
+        Legen Sie hier die Grundeinstellungen fuer Ihre GEDCOM-Ausgabe fest.
+        Diese Angaben koennen im Profil gespeichert und beim naechsten Mal automatisch geladen werden.
+      </p>
+
+      <div class="project-settings-layout">
+
+        <!-- Linke Spalte: GEDCOM-Einstellungen -->
+        <div class="project-col">
+          <div class="settings-card">
+            <h3 class="settings-card-title">&#128196; GEDCOM-Version &amp; Format</h3>
+
+            <div class="settings-row">
+              <label class="settings-label" for="proj-gedcom-ver">GEDCOM-Version</label>
+              <div class="settings-control">
+                <select id="proj-gedcom-ver" class="settings-select">
+                  <option value="5.5.1" selected>5.5.1 &ndash; Standard (breite Kompatibilitaet)</option>
+                  <option value="7.0">7.0 &ndash; Modern (FamilySearch, gramps 6+)</option>
+                </select>
+                <p id="proj-gedcom-hint" class="settings-hint"></p>
+              </div>
+            </div>
+
+            <div class="settings-row" id="proj-char-row">
+              <label class="settings-label" for="proj-char">Zeichensatz (CHAR)</label>
+              <div class="settings-control">
+                <select id="proj-char" class="settings-select">
+                  <option value="UTF-8" selected>UTF-8 (empfohlen)</option>
+                  <option value="ANSEL">ANSEL (legacy)</option>
+                  <option value="ASCII">ASCII</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <label class="settings-label" for="proj-lang">Sprache (LANG)</label>
+              <div class="settings-control">
+                <select id="proj-lang" class="settings-select">
+                  <option value="German" selected>Deutsch (German)</option>
+                  <option value="English">Englisch (English)</option>
+                  <option value="French">Franzoesisch (French)</option>
+                  <option value="Polish">Polnisch (Polish)</option>
+                  <option value="Czech">Tschechisch (Czech)</option>
+                  <option value="Latin">Latein (Latin)</option>
+                </select>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Rechte Spalte: Datei-Metadaten -->
+        <div class="project-col">
+          <div class="settings-card">
+            <h3 class="settings-card-title">&#128221; Datei-Metadaten</h3>
+
+            <div class="settings-row">
+              <label class="settings-label" for="proj-file-desc">Dateibeschreibung (FILE)</label>
+              <input id="proj-file-desc" class="settings-input" placeholder="z.B. Schuelerliste Bautzen 1700-1750" />
+            </div>
+
+            <div class="settings-row">
+              <label class="settings-label" for="proj-submitter">Bearbeiter (SUBM)</label>
+              <input id="proj-submitter" class="settings-input" placeholder="z.B. Max Mustermann" />
+            </div>
+
+            <div class="settings-row">
+              <label class="settings-label" for="proj-note">Notiz zur Datei (NOTE)</label>
+              <textarea id="proj-note" class="settings-textarea" rows="3" placeholder="Optionale Anmerkung zur Datei oder Quelle"></textarea>
+            </div>
+
+            <div class="settings-row">
+              <label class="settings-label" for="proj-filename">Ausgabedateiname</label>
+              <input id="proj-filename" class="settings-input" placeholder="export.ged" />
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Vorschau-Spalte -->
+        <div class="project-col project-col-preview">
+          <div class="settings-card">
+            <h3 class="settings-card-title">&#128269; Header-Vorschau</h3>
+            <pre id="proj-head-preview" class="export-head-preview"></pre>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="step-actions">
+        <button id="btn-project-next" class="btn-primary btn-large">Weiter zum Import-Check &#8594;</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Import-Check -->
     <section id="step-import" class="step hidden">
-      <h2 class="step-title"><span class="step-num">2</span> Import-Check <span id="import-sheet-subtitle" class="import-sheet-subtitle"></span></h2>
+      <h2 class="step-title"><span class="step-num">3</span> Import-Check <span id="import-sheet-subtitle" class="import-sheet-subtitle"></span></h2>
 
       <div class="import-layout">
-
-        <!-- Left: row classification table -->
         <div class="import-main">
           <p class="section-desc">Ueberpruefen und korrigieren Sie die Zeilentypen. Zeilen die als <strong>GLOBAL_VAR</strong> markiert sind, stehen spaeter als Platzhalter im Mapping zur Verfuegung.</p>
           <div id="row-table-wrap" class="row-table-wrap">
@@ -100,17 +199,14 @@
           </div>
         </div>
 
-        <!-- Right: summary panels -->
         <div class="import-sidebar">
-
           <div class="panel" id="panel-globalvars">
             <h3>Globale Variablen</h3>
-            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier. Jede belegte Spalte erhaelt einen eigenen Platzhalter.</p>
+            <p class="panel-hint">Zeilen mit Typ GLOBAL_VAR erscheinen hier.</p>
             <div id="globalvars-list" class="globalvars-list">
               <p class="empty-hint">Noch keine globalen Variablen definiert.</p>
             </div>
           </div>
-
           <div class="panel" id="panel-columns">
             <h3>Spaltenuebersicht</h3>
             <div class="panel-toolbar">
@@ -123,7 +219,6 @@
               <p class="empty-hint">Wird nach Bestaetigung der Header-Zeile angezeigt.</p>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -133,10 +228,10 @@
       </div>
     </section>
 
-    <!-- STEP 3: Quelleneinstellungen -->
+    <!-- STEP 4: Quelleneinstellungen -->
     <section id="step-sources" class="step hidden">
       <div class="mapping-toolbar">
-        <h2 class="step-title" style="margin:0"><span class="step-num">3</span> Quelleneinstellungen</h2>
+        <h2 class="step-title" style="margin:0"><span class="step-num">4</span> Quelleneinstellungen</h2>
         <div class="mapping-toolbar-right">
           <label class="preview-row-label">Vorschau-Zeile:
             <select id="sources-preview-row-select" class="preview-row-sel"></select>
@@ -146,19 +241,12 @@
       </div>
 
       <div class="mapping-layout sources-layout">
-        <!-- Col 1: Extras -->
         <div id="sources-left" class="mapping-left"></div>
-
-        <!-- Col 2: Tabellenspalten -->
         <div id="sources-cols" class="mapping-cols"></div>
-
-        <!-- Col 3: Quellen -->
         <div class="mapping-center">
           <div id="sources-right" class="mapping-right"></div>
           <button id="btn-add-source" class="btn-secondary" style="margin:12px 16px">+ Weitere Quelle hinzufuegen</button>
         </div>
-
-        <!-- Col 4: Vorschau -->
         <div class="mapping-preview-col">
           <div id="sources-preview-card" class="preview-card">
             <div class="preview-title">Vorschau</div>
@@ -168,10 +256,10 @@
       </div>
     </section>
 
-    <!-- STEP 4: Mapping -->
+    <!-- STEP 5: Mapping -->
     <section id="step-mapping" class="step hidden">
       <div class="mapping-toolbar">
-        <h2 class="step-title" style="margin:0"><span class="step-num">4</span> Mapping</h2>
+        <h2 class="step-title" style="margin:0"><span class="step-num">5</span> Mapping</h2>
         <div class="mapping-toolbar-right">
           <label class="preview-row-label">Vorschau-Zeile:
             <select id="preview-row-select" class="preview-row-sel"></select>
@@ -181,19 +269,12 @@
       </div>
 
       <div class="mapping-layout">
-        <!-- Col 1: Extras (vars, static, sources) -->
         <div id="mapping-left" class="mapping-left"></div>
-
-        <!-- Col 2: Tabellenspalten -->
         <div id="mapping-cols" class="mapping-cols"></div>
-
-        <!-- Col 3: Person/Event builder -->
         <div class="mapping-center">
           <div id="mapping-right" class="mapping-right"></div>
           <button id="btn-add-person" class="btn-secondary" style="margin-top:12px">+ Weitere Person hinzufuegen</button>
         </div>
-
-        <!-- Col 4: Preview -->
         <div class="mapping-preview-col">
           <div class="panel">
             <h3>Vorschau</h3>
@@ -204,9 +285,9 @@
       </div>
     </section>
 
-    <!-- STEP 5: Export -->
+    <!-- STEP 6: Export -->
     <section id="step-export" class="step hidden">
-      <h2 class="step-title"><span class="step-num">5</span> Export</h2>
+      <h2 class="step-title"><span class="step-num">6</span> Export</h2>
       <p class="section-desc">GEDCOM-Datei erstellen und herunterladen.</p>
       <div id="step-export-content"></div>
     </section>
@@ -223,6 +304,7 @@
   <script src="js/mapping.js"></script>
   <script src="js/mapping-ui.js"></script>
   <script src="js/profile.js"></script>
+  <script src="js/project-settings.js"></script>
   <script src="js/export.js"></script>
   <script src="js/export-ui.js"></script>
   <script src="js/app.js"></script>

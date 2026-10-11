@@ -116,6 +116,7 @@ function generateGEDCOM(headConfig) {
   const lines = [];
 
   // ---- HEAD ----
+  const isV7 = (headConfig.gedcomVer || '5.5.1') === '7.0';
   lines.push('0 HEAD');
   lines.push('1 SOUR GedXL');
   lines.push('2 VERS 1.0');
@@ -123,14 +124,21 @@ function generateGEDCOM(headConfig) {
   if (headConfig.fileDesc) lines.push('1 FILE ' + headConfig.fileDesc);
   lines.push('1 GEDC');
   lines.push('2 VERS ' + (headConfig.gedcomVer || '5.5.1'));
-  lines.push('2 FORM LINEAGE-LINKED');
-  lines.push('1 CHAR UTF-8');
+  if (!isV7) {
+    lines.push('2 FORM LINEAGE-LINKED');
+    lines.push('1 CHAR ' + (headConfig.charSet || 'UTF-8'));
+  }
   if (headConfig.lang) lines.push('1 LANG ' + headConfig.lang);
   lines.push('1 DATE ' + gedcomToday());
-  if (headConfig.submitter) {
-    lines.push('1 SUBM @SUBM1@');
+  if (headConfig.submitter) lines.push('1 SUBM @SUBM1@');
+  if (headConfig.note) {
+    if (isV7) {
+      // GEDCOM 7: NOTE als eigener Record
+      lines.push('1 NOTE @N1@');
+    } else {
+      lines.push('1 NOTE ' + headConfig.note);
+    }
   }
-  if (headConfig.note) lines.push('1 NOTE ' + headConfig.note);
   lines.push('');
 
   // ---- SOUR records (new sources only) ----
@@ -267,6 +275,13 @@ function generateGEDCOM(headConfig) {
   if (headConfig.submitter) {
     lines.push('0 @SUBM1@ SUBM');
     lines.push('1 NAME ' + headConfig.submitter);
+    lines.push('');
+  }
+
+  // ---- GEDCOM 7: NOTE record fuer Header-Notiz ----
+  if (isV7 && headConfig.note) {
+    lines.push('0 @N1@ NOTE');
+    lines.push('1 TRAN ' + headConfig.note);
     lines.push('');
   }
 
