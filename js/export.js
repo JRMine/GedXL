@@ -16,27 +16,23 @@ function resolveField(field, dataRow, gvars) {
   return previewFieldValue(field, dataRow, gvars) || null;
 }
 
-// ---- Normalize a date string to GEDCOM date format (best-effort) ----
+// ---- Normalize a date string to GEDCOM date format ----
 function normalizeDate(raw) {
   if (!raw) return null;
   const s = String(raw).trim();
   if (s === '') return null;
 
-  // Already looks like a GEDCOM date (e.g. "15 JAN 1702")
+  // Already a GEDCOM date (e.g. "15 JAN 1702", "ABT 1740", "BET … AND …")
+  if (/^(?:ABT|AFT|BEF|BET|CAL|EST|FROM|TO|INT)?\s*\d/.test(s) && /[A-Z]{3}/.test(s)) return s;
   if (/^\d{1,2}\s+[A-Z]{3}\s+\d{4}$/.test(s)) return s;
 
-  // Try DD.MM.YYYY or DD/MM/YYYY
-  const dmy = s.match(/^(\d{1,2})[.\-\/](\d{1,2})[.\-\/](\d{4})$/);
-  if (dmy) {
-    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-    const m = parseInt(dmy[2]) - 1;
-    if (m >= 0 && m < 12) return dmy[1] + ' ' + months[m] + ' ' + dmy[3];
+  // Historischen Parser zuerst versuchen
+  if (typeof parseHistoricalDate === 'function') {
+    const parsed = parseHistoricalDate(s);
+    if (parsed) return parsed.gedcom + (parsed.note ? '||NOTE:' + parsed.note : '');
   }
 
-  // Only year
-  if (/^\d{4}$/.test(s)) return s;
-
-  // YYYY-MM-DD (ISO)
+  // ISO YYYY-MM-DD
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (iso) {
     const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
@@ -44,7 +40,7 @@ function normalizeDate(raw) {
     if (m >= 0 && m < 12) return iso[3] + ' ' + months[m] + ' ' + iso[1];
   }
 
-  // Can't normalize — return as NOTE value with marker
+  // Nicht erkannt — als NOTE
   return '__RAW__' + s;
 }
 
@@ -193,6 +189,10 @@ function generateGEDCOM(headConfig) {
             if (norm && norm.startsWith('__RAW__')) {
               lines.push('2 DATE');
               lines.push('3 NOTE Originalwert: ' + norm.slice(7));
+            } else if (norm && norm.includes('||NOTE:')) {
+              const [dateVal, noteVal] = norm.split('||NOTE:');
+              lines.push('2 DATE ' + dateVal.trim());
+              lines.push('3 NOTE ' + noteVal.trim());
             } else if (norm) {
               lines.push('2 DATE ' + norm);
             }
