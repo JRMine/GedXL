@@ -751,3 +751,26 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 .src-preview-line { margin-bottom: 3px; }
 .src-tag { color: #1565c0; margin-right: 8px; }
 .src-val { color: #1a1a2e; }
+
+/* ---- Source mode tiles ---- */
+.source-mode-section { background: #f8f9fc; }
+.source-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.source-mode-tile {
+  border: 2px solid #e0e4eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.source-mode-tile:hover { border-color: #7ec8e3; background: #eaf7fb; }
+.source-mode-tile.active { border-color: #1a1a2e; background: #eaf7fb; }
+.mode-tile-label { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+.mode-tile-desc { font-size: 11px; color: #888; line-height: 1.4; }
+.source-mode-tile.active .mode-tile-label { color: #1a1a2e; }

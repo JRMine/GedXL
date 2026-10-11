@@ -53,33 +53,69 @@ function renderSourceDef(src, idx) {
   });
   card.appendChild(header);
 
-  // Source fields
-  const sfSection = document.createElement('div');
-  sfSection.className = 'source-section';
-  sfSection.innerHTML = `
-    <div class="source-section-title">
-      📖 Quell-Objekt
-      <span class="source-section-hint">Beschreibt die Quelle selbst (wird einmalig in der GEDCOM angelegt)</span>
-    </div>
-  `;
-  src.sourceFields.forEach(field => {
-    sfSection.appendChild(renderSourceFieldRow(field, src));
+  // Mode selector
+  const modeSection = document.createElement('div');
+  modeSection.className = 'source-section source-mode-section';
+  modeSection.innerHTML = `<div class="source-section-title">⚙️ Verwendungsart</div>`;
+  const modeGrid = document.createElement('div');
+  modeGrid.className = 'source-mode-grid';
+  SOURCE_MODES.forEach(m => {
+    const tile = document.createElement('label');
+    tile.className = 'source-mode-tile' + (src.mode === m.value ? ' active' : '');
+    tile.innerHTML = `
+      <input type="radio" name="src-mode-${src.id}" value="${m.value}" ${src.mode === m.value ? 'checked' : ''} hidden />
+      <span class="mode-tile-label">${m.label}</span>
+      <span class="mode-tile-desc">${m.desc}</span>
+    `;
+    tile.addEventListener('click', () => {
+      src.mode = m.value;
+      applyModeDefaults(src);
+      renderAllSources();
+    });
+    modeGrid.appendChild(tile);
   });
-  card.appendChild(sfSection);
+  modeSection.appendChild(modeGrid);
+  card.appendChild(modeSection);
 
-  // Citation fields
-  const cfSection = document.createElement('div');
-  cfSection.className = 'source-section';
-  cfSection.innerHTML = `
-    <div class="source-section-title">
-      🔖 Zitation
-      <span class="source-section-hint">Individuelle Angaben je Datensatz (z.B. Seitenzahl)</span>
-    </div>
-  `;
-  src.citationFields.forEach(field => {
-    cfSection.appendChild(renderSourceFieldRow(field, src));
-  });
-  card.appendChild(cfSection);
+  // Existing ID mode — special handling
+  if (src.mode === 'existing') {
+    const existSection = document.createElement('div');
+    existSection.className = 'source-section';
+    existSection.innerHTML = `
+      <div class="source-section-title">🔗 GEDCOM Quell-ID</div>
+      <div class="source-field-row-ui" style="grid-template-columns:200px 1fr">
+        <label class="source-field-label">ID in Ziel-GEDCOM</label>
+        <input class="source-val-input" id="src-existing-${src.id}" value="${escHtml(src.existingId)}" placeholder="z.B. @S1@" />
+      </div>
+      <p class="source-hint" style="margin-top:8px">Die Quelle muss bereits in der Ziel-GEDCOM-Datei vorhanden sein. Nur die ID wird in die Zitation eingetragen — keine weiteren Felder werden angelegt.</p>
+    `;
+    existSection.querySelector('input').addEventListener('input', e => { src.existingId = e.target.value; updateSourcePreview(src); });
+    card.appendChild(existSection);
+  } else {
+    // Source fields
+    const sfSection = document.createElement('div');
+    sfSection.className = 'source-section';
+    sfSection.innerHTML = `
+      <div class="source-section-title">
+        📖 Quell-Objekt
+        <span class="source-section-hint">Beschreibt die Quelle selbst (wird einmalig in der GEDCOM angelegt)</span>
+      </div>
+    `;
+    src.sourceFields.forEach(field => sfSection.appendChild(renderSourceFieldRow(field, src)));
+    card.appendChild(sfSection);
+
+    // Citation fields
+    const cfSection = document.createElement('div');
+    cfSection.className = 'source-section';
+    cfSection.innerHTML = `
+      <div class="source-section-title">
+        🔖 Zitation
+        <span class="source-section-hint">Individuelle Angaben je Datensatz (z.B. Seitenzahl)</span>
+      </div>
+    `;
+    src.citationFields.forEach(field => cfSection.appendChild(renderSourceFieldRow(field, src)));
+    card.appendChild(cfSection);
+  }
 
   // Attach-to settings
   const attachSection = document.createElement('div');
