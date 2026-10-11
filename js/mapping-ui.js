@@ -22,7 +22,7 @@ function initMappingDomRefs() {
   });
 
   document.getElementById('btn-to-export').addEventListener('click', () => {
-    alert('Schritt 5 (Export) ist noch in Entwicklung.');
+    // handled in app.js
   });
 }
 

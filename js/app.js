@@ -36,10 +36,11 @@ const navItems     = {
 let currentStep = 1;
 
 function showStep(stepEl, stepNum) {
-  [stepUpload, stepSheets, stepImport, document.getElementById('step-sources'), document.getElementById('step-mapping')].forEach(s => {
-    s.classList.remove('active');
-    s.classList.add('hidden');
-  });
+  [stepUpload, stepSheets, stepImport,
+   document.getElementById('step-sources'),
+   document.getElementById('step-mapping'),
+   document.getElementById('step-export')
+  ].forEach(s => { if (s) { s.classList.remove('active'); s.classList.add('hidden'); } });
   stepEl.classList.remove('hidden');
   stepEl.classList.add('active');
   currentStep = stepNum;
@@ -59,7 +60,9 @@ function updateNav(activeNum) {
 
 // ---- Back button ----
 btnBack.addEventListener('click', () => {
-  if (currentStep === 4) {
+  if (currentStep === 5) {
+    showStep(document.getElementById('step-mapping'), 4);
+  } else if (currentStep === 4) {
     showStep(document.getElementById('step-sources'), 3);
   } else if (currentStep === 3) {
     showStep(stepImport, 2);
@@ -346,8 +349,14 @@ btnNext.addEventListener('click', () => {
   showStep(document.getElementById('step-sources'), 3);
 });
 
-// ---- Sources → Mapping ----
+// ---- Sources -> Mapping ----
 document.getElementById('btn-sources-next').addEventListener('click', () => {
   initMapping();
   showStep(document.getElementById('step-mapping'), 4);
+});
+
+// ---- Mapping -> Export ----
+document.getElementById('btn-to-export').addEventListener('click', () => {
+  initExport();
+  showStep(document.getElementById('step-export'), 5);
 });

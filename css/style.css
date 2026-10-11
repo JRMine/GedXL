@@ -894,3 +894,27 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 }
 .rel-toggle-btn { font-size: 10px; color: #888; padding: 2px 5px; }
 .rel-add-btns { display: flex; gap: 8px; margin-top: 6px; }
+
+/* ---- Export Step ---- */
+.export-warnings { margin-bottom: 20px; }
+.export-warning-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; font-size: 13px; }
+.export-warning-error { background: #fdecea; border: 1px solid #f5c6cb; color: #721c24; }
+.export-warning-warn  { background: #fff3cd; border: 1px solid #ffc107; color: #856404; }
+.export-warning-info  { background: #e8f4fd; border: 1px solid #bee5eb; color: #0c5460; }
+.warn-icon { font-size: 15px; flex-shrink: 0; }
+
+.export-stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.stat-item { background: #f8f9fa; border: 1px solid #e0e4eb; border-radius: 8px; padding: 16px 20px; text-align: center; min-width: 100px; }
+.stat-num { display: block; font-size: 28px; font-weight: 700; color: #1a1a2e; }
+.stat-label { display: block; font-size: 11px; color: #888; margin-top: 2px; }
+
+.export-filename-row { margin-bottom: 16px; }
+.export-filename-label { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.export-filename-input { border: 1px solid #dde1ea; border-radius: 6px; padding: 6px 12px; font-size: 13px; width: 260px; }
+
+.export-btn-row { margin-bottom: 24px; }
+.export-preview {
+  background: #1a1a2e; color: #a8d8ea; font-family: 'Courier New', monospace;
+  font-size: 11px; line-height: 1.5; padding: 16px; border-radius: 8px;
+  max-height: 500px; overflow-y: auto; white-space: pre; tab-size: 2;
+}
