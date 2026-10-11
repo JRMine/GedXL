@@ -249,6 +249,34 @@ function renderPersonList() {
     }
     card.appendChild(relSection);
 
+    // Implied (reverse) relationships from other persons
+    const reverseRoleMap = { 'Vater': 'Kind', 'Mutter': 'Kind', 'Kind': 'Elternteil', 'Partner': 'Partner', 'Geschwister': 'Geschwister' };
+    const impliedRels = [];
+    mappingPersons.forEach(other => {
+      if (other.id === person.id) return;
+      other.relatives.forEach(rel => {
+        if (rel.targetPersonId === person.id) {
+          impliedRels.push({ fromLabel: other.label, role: reverseRoleMap[rel.role] || rel.role });
+        }
+      });
+    });
+    if (impliedRels.length > 0) {
+      const impliedSection = document.createElement('div');
+      impliedSection.className = 'fields-section implied-rels-section';
+      impliedSection.innerHTML = '<div class="fields-section-title">Abgeleitete Beziehungen <span class="implied-hint-badge">automatisch</span></div>';
+      impliedRels.forEach(ir => {
+        const item = document.createElement('div');
+        item.className = 'implied-rel-item';
+        item.textContent = 'ist ' + ir.role + ' von ' + ir.fromLabel;
+        impliedSection.appendChild(item);
+      });
+      const note = document.createElement('p');
+      note.className = 'implied-rel-note';
+      note.textContent = 'Diese Beziehung ergibt sich automatisch und muss nicht nochmal eingetragen werden.';
+      impliedSection.appendChild(note);
+      card.appendChild(impliedSection);
+    }
+
     // Person citations
     const personCitBlock = document.createElement('div');
     personCitBlock.className = 'fields-section person-citations-block';
