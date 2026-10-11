@@ -264,6 +264,18 @@ function loadNextSheetForCheck() {
 
 function finalizeCurrentSheet() {
   const sheet = sheetImportQueue.shift();
+
+  // Varnames aus DOM sichern
+  const varNames = {};
+  currentRows.forEach((row, i) => {
+    if (classifications[i]?.type !== 'GLOBAL_VAR') return;
+    const tr = rowTableBody.children[i];
+    if (!tr) return;
+    tr.querySelectorAll('.varname-input').forEach(inp => {
+      varNames[i + '_' + inp.dataset.colIdx] = inp.value;
+    });
+  });
+
   sheetImportDone.push({
     name: sheet.name,
     role: sheet.role,
@@ -271,6 +283,7 @@ function finalizeCurrentSheet() {
     classifications: [...classifications],
     ignoredColumns: new Set(ignoredColumns),
     headers: [...headers],
+    varNames,
   });
   loadNextSheetForCheck();
 }
@@ -306,6 +319,23 @@ function finalizeMerge() {
 
   // DOM neu aufbauen damit collectGlobalVars() die Eingabefelder findet
   renderRowTable();
+
+  // Varnames aus gespeicherten Blatt-Daten wiederherstellen
+  sheetImportDone.forEach(sheet => {
+    if (!sheet.varNames) return;
+    sheet.rows.forEach((row, localIdx) => {
+      // Finde den globalen Index dieser Zeile in mergedRows
+      const globalIdx = currentRows.indexOf(row);
+      if (globalIdx < 0) return;
+      const tr = rowTableBody.children[globalIdx];
+      if (!tr) return;
+      tr.querySelectorAll('.varname-input').forEach(inp => {
+        const key = localIdx + '_' + inp.dataset.colIdx;
+        if (sheet.varNames[key]) inp.value = sheet.varNames[key];
+      });
+    });
+  });
+
   renderGlobalVars();
 
   initSources();
