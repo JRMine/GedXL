@@ -441,7 +441,7 @@ function renderGlobalVars() {  const items = [];
       const colIdx = parseInt(inp.dataset.colIdx);
       const cell = row[colIdx];
       const value = cell !== null && cell !== undefined ? String(cell).trim() : '?';
-      items.push({ varName: inp.value || `{Var?}`, value, rowNum: i + 1, rowIdx: i });
+      items.push({ varName: inp.value || '{Var?}', value, rowNum: i + 1, rowIdx: i, colIdx: parseInt(inp.dataset.colIdx) });
     });
   });
 
@@ -450,7 +450,7 @@ function renderGlobalVars() {  const items = [];
     return;
   }
   globalvarsList.innerHTML = '';
-  items.forEach(({ varName, value, rowNum, rowIdx }) => {
+  items.forEach(({ varName, value, rowNum, rowIdx, colIdx }) => {
     const div = document.createElement('div');
     div.className = 'globalvar-item';
     div.innerHTML =
@@ -458,15 +458,15 @@ function renderGlobalVars() {  const items = [];
       '<div class="globalvar-value">Zeile ' + rowNum + ': &quot;' + escHtml(value) + '&quot;</div>' +
       '<button class="globalvar-remove" title="Variable entfernen">&#10005;</button>';
     div.querySelector('.globalvar-remove').addEventListener('click', () => {
-      classifications[rowIdx] = { type: 'IGNORE', confidence: 1 };
+      // Nur diese Spalte aus der Zeile entfernen — varname-wrap mit passendem colIdx entfernen
       const tr = rowTableBody.children[rowIdx];
       if (tr) {
-        tr.className = 'row-IGNORE';
-        const sel = tr.querySelector('.row-type-select');
-        if (sel) sel.value = 'IGNORE';
+        tr.querySelectorAll('.varname-wrap').forEach(w => {
+          const inp = w.querySelector('.varname-input');
+          if (inp && parseInt(inp.dataset.colIdx) === colIdx) w.remove();
+        });
       }
       renderGlobalVars();
-      renderColumnPaletteIfVisible();
       checkNextButton();
     });
     globalvarsList.appendChild(div);
