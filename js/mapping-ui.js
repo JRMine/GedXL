@@ -18,6 +18,20 @@ function buildEventOptions() {
   return result;
 }
 
+// Baut gruppierte Options-Liste fuer das Personenfeld-Dropdown
+function buildPersonFieldOptions() {
+  const result = [];
+  let lastGroup = null;
+  GEDCOM_PERSON_FIELDS.forEach(f => {
+    if (f.group !== lastGroup) {
+      result.push({ path: '__group__', label: f.group });
+      lastGroup = f.group;
+    }
+    result.push({ path: f.path, label: f.label });
+  });
+  return result;
+}
+
 function initMappingDomRefs() {
   mappingLeft      = document.getElementById('mapping-left');
   mappingCols      = document.getElementById('mapping-cols');
@@ -253,7 +267,7 @@ function renderPersonList() {
     fieldsSection.className = 'fields-section';
     fieldsSection.innerHTML = '<div class="fields-section-title">Personenfelder</div>';
     person.fields.forEach(field => fieldsSection.appendChild(renderField(field, person, null)));
-    fieldsSection.appendChild(createAddButton('+ Feld hinzufuegen', GEDCOM_PERSON_FIELDS, path => {
+    fieldsSection.appendChild(createAddButton('+ Feld hinzufuegen', buildPersonFieldOptions(), path => {
       addPersonField(person, path); renderPersonList(); renderPreview();
     }));
     card.appendChild(fieldsSection);

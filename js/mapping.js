@@ -4,16 +4,55 @@
 
 // ---- GEDCOM Schema Definition ----
 const GEDCOM_PERSON_FIELDS = [
-  { path: 'NAME.GIVN',  label: 'Vorname',           group: 'Name' },
-  { path: 'NAME.SURN',  label: 'Nachname',           group: 'Name' },
-  { path: 'NAME.NICK',  label: 'Alternativer Name',  group: 'Name' },
-  { path: 'SEX',        label: 'Geschlecht',         group: 'Person' },
-  { path: 'BIRT.DATE',  label: 'Geburtsdatum',       group: 'Geburt' },
-  { path: 'BIRT.PLAC',  label: 'Geburtsort',         group: 'Geburt' },
-  { path: 'DEAT.DATE',  label: 'Sterbedatum',        group: 'Tod' },
-  { path: 'DEAT.PLAC',  label: 'Sterbeort',          group: 'Tod' },
-  { path: 'OCCU',       label: 'Beruf',              group: 'Sonstiges' },
-  { path: 'NOTE',       label: 'Notiz (Person)',      group: 'Sonstiges' },
+  // ---- Name ----
+  { path: 'NAME.GIVN',  label: 'Vorname',                    group: 'Name' },
+  { path: 'NAME.SURN',  label: 'Nachname / Familienname',    group: 'Name' },
+  { path: 'NAME.NICK',  label: 'Spitzname / Rufname',        group: 'Name' },
+  { path: 'NAME.NPFX',  label: 'Namenspräfix (Dr., Graf…)',  group: 'Name' },
+  { path: 'NAME.NSFX',  label: 'Namenssuffix (Jr., Sr.…)',   group: 'Name' },
+  { path: 'NAME.SPFX',  label: 'Adelspräfix (von, de…)',     group: 'Name' },
+  // ---- Person ----
+  { path: 'SEX',        label: 'Geschlecht (M/F/U)',         group: 'Person' },
+  { path: 'AGE',        label: 'Alter',                      group: 'Person' },
+  { path: 'TITL',       label: 'Titel / Stand',              group: 'Person' },
+  { path: 'RELI',       label: 'Religion / Konfession',      group: 'Person' },
+  { path: 'NATI',       label: 'Nationalität / Herkunft',    group: 'Person' },
+  { path: 'IDNO',       label: 'Personenidentifikator',      group: 'Person' },
+  { path: 'REFN',       label: 'Referenznummer',             group: 'Person' },
+  // ---- Geburt ----
+  { path: 'BIRT.DATE',  label: 'Geburtsdatum',               group: 'Geburt' },
+  { path: 'BIRT.PLAC',  label: 'Geburtsort',                 group: 'Geburt' },
+  { path: 'BIRT.NOTE',  label: 'Notiz zur Geburt',           group: 'Geburt' },
+  // ---- Taufe ----
+  { path: 'CHR.DATE',   label: 'Taufdatum (CHR)',            group: 'Taufe' },
+  { path: 'CHR.PLAC',   label: 'Taufort (CHR)',              group: 'Taufe' },
+  { path: 'BAPM.DATE',  label: 'Taufdatum (BAPM)',           group: 'Taufe' },
+  { path: 'BAPM.PLAC',  label: 'Taufort (BAPM)',             group: 'Taufe' },
+  // ---- Tod & Bestattung ----
+  { path: 'DEAT.DATE',  label: 'Sterbedatum',                group: 'Tod' },
+  { path: 'DEAT.PLAC',  label: 'Sterbeort',                  group: 'Tod' },
+  { path: 'DEAT.CAUS',  label: 'Todesursache',               group: 'Tod' },
+  { path: 'DEAT.AGE',   label: 'Alter bei Tod',              group: 'Tod' },
+  { path: 'DEAT.NOTE',  label: 'Notiz zum Tod',              group: 'Tod' },
+  { path: 'BURI.DATE',  label: 'Bestattungsdatum',           group: 'Tod' },
+  { path: 'BURI.PLAC',  label: 'Bestattungsort',             group: 'Tod' },
+  { path: 'CREM.DATE',  label: 'Einäscherungsdatum',         group: 'Tod' },
+  { path: 'CREM.PLAC',  label: 'Einäscherungsort',           group: 'Tod' },
+  // ---- Beruf & Bildung ----
+  { path: 'OCCU',       label: 'Beruf',                      group: 'Beruf & Bildung' },
+  { path: 'EDUC',       label: 'Ausbildung',                 group: 'Beruf & Bildung' },
+  // ---- Wohnort & Migration ----
+  { path: 'RESI.DATE',  label: 'Wohndatum',                  group: 'Wohnort' },
+  { path: 'RESI.PLAC',  label: 'Wohnort',                    group: 'Wohnort' },
+  { path: 'EMIG.DATE',  label: 'Auswanderungsdatum',         group: 'Wohnort' },
+  { path: 'EMIG.PLAC',  label: 'Auswanderungsort',           group: 'Wohnort' },
+  { path: 'IMMI.DATE',  label: 'Einwanderungsdatum',         group: 'Wohnort' },
+  { path: 'IMMI.PLAC',  label: 'Einwanderungsort',           group: 'Wohnort' },
+  { path: 'NATU.DATE',  label: 'Einbürgerungsdatum',         group: 'Wohnort' },
+  { path: 'NATU.PLAC',  label: 'Einbürgerungsort',           group: 'Wohnort' },
+  // ---- Sonstiges ----
+  { path: 'NOTE',       label: 'Notiz (Person)',              group: 'Sonstiges' },
+  { path: 'CHAN.DATE',   label: 'Änderungsdatum',             group: 'Sonstiges' },
 ];
 
 const GEDCOM_EVENT_TYPES = [
