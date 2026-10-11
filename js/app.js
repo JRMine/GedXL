@@ -201,7 +201,9 @@ function renderVarInputsForRow(container, row, rowIdx) {
 
     const lbl = document.createElement('span');
     lbl.className = 'varname-col-lbl';
-    lbl.textContent = (headers[colIdx] || `Sp.${colIdx + 1}`) + ':';
+    const colName = headers[colIdx] || `Sp.${colIdx + 1}`;
+    lbl.textContent = `Sp. „${colName}":`;
+    lbl.title = `Spaltenname: ${colName}`;
 
     const inp = document.createElement('input');
     inp.type = 'text';

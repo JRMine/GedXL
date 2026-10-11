@@ -242,7 +242,7 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
 
 .td-varnames { display: flex; flex-direction: column; gap: 4px; }
 .varname-wrap { display: flex; align-items: center; gap: 4px; }
-.varname-col-lbl { font-size: 10px; color: #999; white-space: nowrap; max-width: 70px; overflow: hidden; text-overflow: ellipsis; }
+.varname-col-lbl { font-size: 10px; color: #aaa; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
 .varname-input {
   border: 1px solid #d0d5dd;
   border-radius: 4px;
