@@ -21,6 +21,7 @@ const rowTableBody = document.getElementById('row-table-body');
 const globalvarsList = document.getElementById('globalvars-list');
 const columnsList  = document.getElementById('columns-list');
 const btnNext      = document.getElementById('btn-next');
+const stepMapping  = document.getElementById('step-mapping');
 const nextHint     = document.getElementById('next-hint');
 const btnBack      = document.getElementById('btn-back');
 const chkHideEmpty = document.getElementById('chk-hide-empty');
@@ -35,7 +36,7 @@ const navItems     = {
 let currentStep = 1;
 
 function showStep(stepEl, stepNum) {
-  [stepUpload, stepSheets, stepImport].forEach(s => {
+  [stepUpload, stepSheets, stepImport, stepMapping].forEach(s => {
     s.classList.remove('active');
     s.classList.add('hidden');
   });
@@ -58,7 +59,9 @@ function updateNav(activeNum) {
 
 // ---- Back button ----
 btnBack.addEventListener('click', () => {
-  if (currentStep === 2) {
+  if (currentStep === 3) {
+    showStep(stepImport, 2);
+  } else if (currentStep === 2) {
     if (parsedFile && parsedFile.sheetNames.length > 1) {
       showStep(stepSheets, 1);
     } else {
@@ -340,5 +343,6 @@ function escHtml(str) {
 
 // ---- Next button ----
 btnNext.addEventListener('click', () => {
-  alert('Schritt 3 (Mapping) ist noch in Entwicklung. Bis dahin: Alle Zeilen sind klassifiziert und bereit!');
+  initMapping();
+  showStep(stepMapping, 3);
 });
