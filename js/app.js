@@ -21,7 +21,6 @@ const rowTableBody = document.getElementById('row-table-body');
 const globalvarsList = document.getElementById('globalvars-list');
 const columnsList  = document.getElementById('columns-list');
 const btnNext      = document.getElementById('btn-next');
-const stepMapping  = document.getElementById('step-mapping');
 const nextHint     = document.getElementById('next-hint');
 const btnBack      = document.getElementById('btn-back');
 const chkHideEmpty = document.getElementById('chk-hide-empty');
@@ -36,7 +35,7 @@ const navItems     = {
 let currentStep = 1;
 
 function showStep(stepEl, stepNum) {
-  [stepUpload, stepSheets, stepImport, stepMapping].forEach(s => {
+  [stepUpload, stepSheets, stepImport, document.getElementById('step-mapping')].forEach(s => {
     s.classList.remove('active');
     s.classList.add('hidden');
   });
@@ -344,5 +343,5 @@ function escHtml(str) {
 // ---- Next button ----
 btnNext.addEventListener('click', () => {
   initMapping();
-  showStep(stepMapping, 3);
+  showStep(document.getElementById('step-mapping'), 3);
 });
