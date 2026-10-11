@@ -33,7 +33,7 @@ function initMapping() {
   initMappingDomRefs();
   mappingPersons = [];
   const p = createPerson();
-  p.label = 'Person';
+  p.label = 'Person 1';
   mappingPersons.push(p);
   activePersonId = p.id;
   renderColumnPalette();
