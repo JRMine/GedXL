@@ -426,8 +426,13 @@ function onTypeChange(rowIdx, newType, tr, sel) {
 }
 
 // ---- Render global vars panel ----
-function renderGlobalVars() {
-  const items = [];
+function renderColumnPaletteIfVisible() {
+  if (typeof renderColumnPalette === 'function' && document.getElementById('step-mapping')?.classList.contains('active')) {
+    renderColumnPalette();
+  }
+}
+
+function renderGlobalVars() {  const items = [];
   currentRows.forEach((row, i) => {
     if (classifications[i]?.type !== 'GLOBAL_VAR') return;
     const tr = rowTableBody.children[i];
@@ -436,7 +441,7 @@ function renderGlobalVars() {
       const colIdx = parseInt(inp.dataset.colIdx);
       const cell = row[colIdx];
       const value = cell !== null && cell !== undefined ? String(cell).trim() : '?';
-      items.push({ varName: inp.value || `{Var?}`, value, rowNum: i + 1 });
+      items.push({ varName: inp.value || `{Var?}`, value, rowNum: i + 1, rowIdx: i });
     });
   });
 
@@ -445,10 +450,25 @@ function renderGlobalVars() {
     return;
   }
   globalvarsList.innerHTML = '';
-  items.forEach(({ varName, value, rowNum }) => {
+  items.forEach(({ varName, value, rowNum, rowIdx }) => {
     const div = document.createElement('div');
     div.className = 'globalvar-item';
-    div.innerHTML = `<div class="globalvar-name">${escHtml(varName)}</div><div class="globalvar-value">Zeile ${rowNum}: "${escHtml(value)}"</div>`;
+    div.innerHTML =
+      '<div class="globalvar-name">' + escHtml(varName) + '</div>' +
+      '<div class="globalvar-value">Zeile ' + rowNum + ': &quot;' + escHtml(value) + '&quot;</div>' +
+      '<button class="globalvar-remove" title="Variable entfernen">&#10005;</button>';
+    div.querySelector('.globalvar-remove').addEventListener('click', () => {
+      classifications[rowIdx] = { type: 'IGNORE', confidence: 1 };
+      const tr = rowTableBody.children[rowIdx];
+      if (tr) {
+        tr.className = 'row-IGNORE';
+        const sel = tr.querySelector('.row-type-select');
+        if (sel) sel.value = 'IGNORE';
+      }
+      renderGlobalVars();
+      renderColumnPaletteIfVisible();
+      checkNextButton();
+    });
     globalvarsList.appendChild(div);
   });
 }

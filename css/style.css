@@ -1006,3 +1006,12 @@ tr.row-IGNORE   td { background: #fafafa; color: #bbb; }
   font-size: 13px; font-weight: 400; color: #6366f1;
   margin-left: 10px; font-style: italic;
 }
+
+/* ---- Globale Variablen Remove-Button ---- */
+.globalvar-item { display: flex; align-items: center; gap: 8px; }
+.globalvar-remove {
+  margin-left: auto; background: none; border: none; cursor: pointer;
+  color: #aaa; font-size: 13px; padding: 2px 4px; border-radius: 3px;
+  flex-shrink: 0;
+}
+.globalvar-remove:hover { color: #dc2626; background: #fee2e2; }
