@@ -314,7 +314,7 @@ function finalizeMerge() {
         mergedClassifications.push(cls);
         if (!mergedHeaders) mergedHeaders = sheet.headers;
       } else {
-        // Ueberspringe Header-Zeilen aus FolgeblÃ¤ttern
+        // Ueberspringe Header-Zeilen aus Folgeblättern
         if (cls?.type !== 'HEADER') {
           mergedRows.push(row);
           mergedClassifications.push(cls);
@@ -408,7 +408,7 @@ function renderRowTable() {
       const span = document.createElement('span');
       span.className = 'cell-preview';
       span.title = row.map(c => c ?? '').join(' | ');
-      span.textContent = nonEmpty.slice(0, 8).join(' Â· ');
+      span.textContent = nonEmpty.slice(0, 8).join(' | ');
       tdPreview.appendChild(span);
     }
     tr.appendChild(tdPreview);
@@ -529,7 +529,7 @@ function renderColumnStats() {
   const hideEmpty = chkHideEmpty.checked;
 
   if (stats.length === 0) {
-    columnsList.innerHTML = '<p class="empty-hint">Wird nach BestÃ¤tigung der Header-Zeile angezeigt.</p>';
+    columnsList.innerHTML = '<p class="empty-hint">Wird nach Bestätigung der Header-Zeile angezeigt.</p>';
     return;
   }
 
