@@ -134,28 +134,61 @@ async function handleFile(file) {
 function proceedFromUpload() {
   if (!parsedFile) return;
   if (parsedFile.sheetNames.length === 1) {
-    loadSheet(parsedFile.sheetNames[0]);
+    loadSheets([parsedFile.sheetNames[0]]);
   } else {
     sheetList.innerHTML = '';
     parsedFile.sheetNames.forEach(name => {
-      const btn = document.createElement('button');
-      btn.className = 'sheet-btn';
-      btn.textContent = name;
-      btn.addEventListener('click', () => loadSheet(name));
-      sheetList.appendChild(btn);
+      const label = document.createElement('label');
+      label.className = 'sheet-checkbox-label';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.value = name;
+      cb.className = 'sheet-checkbox';
+      cb.checked = true; // alle vorausgewaehlt
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(' ' + name));
+      sheetList.appendChild(label);
     });
     showStep(stepSheets, 1);
   }
 }
 
-// ---- Load sheet ----
-function loadSheet(sheetName) {
-  currentRows = parsedFile.getSheet(sheetName);
-  while (currentRows.length > 0) {
-    const last = currentRows[currentRows.length - 1];
-    if (last.every(c => c === null || c === undefined || String(c).trim() === '')) currentRows.pop();
-    else break;
-  }
+document.getElementById('btn-sheets-all').addEventListener('click', () => {
+  sheetList.querySelectorAll('.sheet-checkbox').forEach(cb => cb.checked = true);
+});
+document.getElementById('btn-sheets-none').addEventListener('click', () => {
+  sheetList.querySelectorAll('.sheet-checkbox').forEach(cb => cb.checked = false);
+});
+document.getElementById('btn-sheets-next').addEventListener('click', () => {
+  const selected = [...sheetList.querySelectorAll('.sheet-checkbox:checked')].map(cb => cb.value);
+  if (selected.length === 0) { alert('Bitte mindestens ein Tabellenblatt auswaehlen.'); return; }
+  loadSheets(selected);
+});
+
+// ---- Load one or more sheets (merged) ----
+function loadSheets(sheetNames) {
+  // Merge rows from all selected sheets
+  // Header comes from first sheet only; subsequent sheets: skip HEADER rows, append DATA rows
+  let mergedRows = [];
+  sheetNames.forEach((name, idx) => {
+    let rows = parsedFile.getSheet(name);
+    // Strip trailing empty rows
+    while (rows.length > 0) {
+      const last = rows[rows.length - 1];
+      if (last.every(c => c === null || c === undefined || String(c).trim() === '')) rows.pop();
+      else break;
+    }
+    if (idx === 0) {
+      mergedRows = rows;
+    } else {
+      // Skip header row(s) of subsequent sheets
+      const tempCls = classifyAllRows(rows);
+      rows.forEach((row, i) => {
+        if (tempCls[i]?.type !== 'HEADER') mergedRows.push(row);
+      });
+    }
+  });
+  currentRows = mergedRows;
   classifications = classifyAllRows(currentRows);
   varCounter = 1;
   ignoredColumns = new Set();
