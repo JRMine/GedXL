@@ -105,7 +105,6 @@ btnBack.addEventListener('click', () => {
   } else if (currentStep === 1) {
     showStep(stepStart, 0);
   }
-  }
 });
 
 // ---- Drag & Drop ----
