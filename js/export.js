@@ -368,7 +368,7 @@ function validateBeforeExport() {
       mappingPersons.some(other => other.relatives.some(r => FAM_ROLES.includes(r.role) && r.targetPersonId === person.id));
     const hasSex = person.fields.some(f => f.path === 'SEX');
     if (inFam && !hasSex) {
-      warnings.push({ level: 'warn', msg: person.label + ': Hat FAM-Beziehungen, aber kein Geschlechtsfeld (SEX) zugeordnet. HUSB/WIFE-Zuweisung im FAM-Record koennte falsch sein.' });
+      warnings.push({ level: 'warn', msg: person.label + ': Hat FAM-Beziehungen, aber kein Geschlechtsfeld (SEX) zugeordnet. HUSB/WIFE-Zuweisung im FAM-Record koennte falsch sein. Mutter- und Vater-Beziehungen koennen nur durch Angabe eines Geschlechts korrekt zugeordnet werden.' });
     }
   });
 
