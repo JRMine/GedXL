@@ -103,7 +103,10 @@ const GEDCOM_EVENT_TYPES = [
 const GEDCOM_EVENT_FIELDS = [
   { path: 'DATE',      label: 'Datum' },
   { path: 'PLAC',      label: 'Ort' },
+  { path: 'AGE',       label: 'Alter (bei diesem Ereignis)' },
+  { path: 'CAUS',      label: 'Ursache / Grund' },
   { path: 'TYPE',      label: 'Ereignistyp (bei EVEN)' },
+  { path: 'AGNC',      label: 'Institution / Behörde' },
   { path: 'NOTE',      label: 'Notiz' },
   { path: 'SOUR.PAGE', label: 'Quelle / Seite' },
 ];
