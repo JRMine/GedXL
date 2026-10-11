@@ -156,15 +156,15 @@ function renderSourceFieldRow(field, src, fieldSet) {
   if (canToggle) {
     const btnStatic = document.createElement('button');
     btnStatic.className = 'toggle-btn' + (field.valueType === 'static' ? ' active' : '');
-    btnStatic.textContent = '&#9999;&#65039; Fester Wert';
+    btnStatic.innerHTML = '&#9999;&#65039; Fester Wert';
     btnStatic.addEventListener('click', () => { field.valueType = 'static'; renderAllSources(); });
     const btnCol = document.createElement('button');
     btnCol.className = 'toggle-btn' + (field.valueType === 'col' ? ' active' : '');
-    btnCol.textContent = '&#128203; Aus Spalte';
+    btnCol.innerHTML = '&#128203; Aus Spalte';
     btnCol.addEventListener('click', () => { field.valueType = 'col'; renderAllSources(); });
     const btnVar = document.createElement('button');
     btnVar.className = 'toggle-btn' + (field.valueType === 'var' ? ' active' : '');
-    btnVar.textContent = '&#123;&#125; Glob. Variable';
+    btnVar.innerHTML = '&#123;&#125; Glob. Variable';
     btnVar.addEventListener('click', () => { field.valueType = 'var'; renderAllSources(); });
     typeWrap.appendChild(btnStatic);
     typeWrap.appendChild(btnCol);
